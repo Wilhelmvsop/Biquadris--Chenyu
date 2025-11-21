@@ -6,7 +6,7 @@ import <utility>;
 
 export class JBlock : public Block {
      public:
-     IBlock(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
+     JBlock(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
      std::vector<std::pair<int, int>> getRotatedCoords() override;
 };
 
