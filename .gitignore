@@ -1,4 +1,5 @@
 objects/
+*.o
 test_runner
 biq
 gcm.cache/
