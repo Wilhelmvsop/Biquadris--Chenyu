@@ -24,4 +24,40 @@
 7. At declaration, if function has side effect or requirement, please comment so.
 8. In implementation, comment if the code doing something not obvious
 
+---
 
+## using `make`
+NGL, you can do `make help` and probably get all you need. But here is how you use it
+
+Available targets:
+  make        - Build main program (biq)
+  make test   - Build and run tests
+  make clean  - Remove all build artifacts
+  make help   - Show this message
+
+To add a new module:
+  0. If needed, add new standard library module (e.g. iostream) <- search GOON0
+  1. Add interface file to MODULE_INTERFACES (e.g., list.cc) <- search GOON1
+  2. Add implementation file to MODULE_IMPLS (e.g., list-impl.cc) <- search GOON1
+  3. Add dependency rule: $(OBJ_DIR)/list-impl.o: list-impl.cc $(OBJ_DIR)/list.o <- search GOON2
+
+To add tests: create `tests/test_<module>.cc` files
+They will be automatically discovered and compiled
+
+**Don't mess with test_runner or test_main. I'll kill ya.**
+
+### Writing tests
+Up to you, you can use my framework if you want. Here is how to use it
+
+1. Add `test/test_<module>.cc` file
+2. `#include "test_runner.h"` and `import` all what you need
+3. For each test case, just do this
+```c++
+TESTCASE(TestCaseName) {
+    // ... test your thing
+    bool ronIsCool = true;
+    REQUIRE(ronIsCool == true);
+    REQUIRE_EQ(ronIsCool, true);
+}
+```
+4. Now you can do `make test`. That's it
