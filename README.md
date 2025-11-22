@@ -12,6 +12,10 @@
 6. Work on Board impl files together (Nov 23-24)
 7. Work on Game impl file together (Nov 24)
 8. Write report (Nov 25-28)
+
+NOTES:
+- For block coordinates, set (r, c) (0, 0) as the 15th row first column, number increases downward and to the right
+- For block rotations, 0 = clockwise, 1 = counter-clockwise
 ---
 
 ## Style Guide:

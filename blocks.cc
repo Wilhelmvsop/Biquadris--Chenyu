@@ -10,64 +10,56 @@ export class Block {
 
      public:
      Block(std::vector<std::pair<int, int>> coords, char ch, int level);
-     bool isCleared();
-     void deleteCoords(std::pair<int, int>);
-     
+     bool isCleared() const;
+     void deleteCoords(std::pair<int, int> target);
+     const std::vector<std::pair<int, int>>& getRotatedCoords(int dir) const;
+
      // getters and setters
-     std::vector<std::pair<int, int>> getCoords();
-     char getChar();
-     int getMotherLevel();
+     const std::vector<std::pair<int, int>>& getCoords() const;
+     char getChar() const;
+     int getMotherLevel() const;
      void setCoords(std::vector<std::pair<int, int>> coords);
 
-     virtual std::vector<std::pair<int, int>> getRotatedCoords() = 0;
-     virtual ~Block() = default;
+     virtual ~Block() = 0;
 };
 
 export class IBlock : public Block {
      public:
-     IBlock(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
-     std::vector<std::pair<int, int>> getRotatedCoords() override;
+     IBlock(int level);
 };
 
 export class JBlock : public Block {
      public:
-     JBlock(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
-     std::vector<std::pair<int, int>> getRotatedCoords() override;
+     JBlock(int level);
 };
 
 export class LBlock : public Block {
      public:
-     LBlock(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
-     std::vector<std::pair<int, int>> getRotatedCoords() override;
+     LBlock(int level);
 };
 
 export class OBlock : public Block {
      public:
-     OBlock(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
-     std::vector<std::pair<int, int>> getRotatedCoords() override;
+     OBlock(int level);
 };
 
 export class SBlock : public Block {
      public:
-     SBlock(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
-     std::vector<std::pair<int, int>> getRotatedCoords() override;
+     SBlock(int level);
 };
 
 export class TBlock : public Block {
      public:
-     TBlock(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
-     std::vector<std::pair<int, int>> getRotatedCoords() override;
+     TBlock(int level);
 };
 
 export class ZBlock : public Block {
      public:
-     ZBlock(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
-     std::vector<std::pair<int, int>> getRotatedCoords() override;
+     ZBlock(int level);
 };
 
 export class BombBlockCat : public Block {
      public:
-     BombBlockCat(std::vector<std::pair<int, int>> coords, char ch, int level) : Block{coords, ch, level} {}
-     std::vector<std::pair<int, int>> getRotatedCoords() override;
+     BombBlockCat(int level);
 };
 
