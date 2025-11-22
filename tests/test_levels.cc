@@ -1,7 +1,7 @@
 #include <fstream>
 
-import level;
-import block;
+import Levels;
+import Blocks;
 
 import <iostream>;
 import <fstream>;
@@ -11,22 +11,72 @@ import <string>;
 
 #include "test_runner.h"
 
-TEST_CASE(LevelFactoryLevelCreation) {
+TEST_CASE(LevelFactory_LevelCreation) {
     LevelFactory factory;
 
     for (unsigned int i = 0; i < 5; ++i) {
-        Level* lvi = factory.createLevel(i, i, "test.txt");
+        Level* lvi = factory.createLevel(i, i, "factory_test.txt");
 
         REQUIRE(lvi->getLevelNum() == i);
         REQUIRE(lvi->getSeed() == i);
-        REQUIRE(lvi->getSrcfile() == "test.txt");
+        REQUIRE(lvi->getSrcfile() == "factory_test.txt");
         REQUIRE(lvi->getRandom() == i > 0);
 
         delete lvi;
     }
 }
 
-TEST_CASE(Level0BlockGeneration) {
+TEST_CASE(LevelFactory_Levelup) {
+    LevelFactory factory;
+    const unsigned int expectedSeed = 1;
+    const std::string expectedSrcfile = "factory_test2.txt";
+
+    Level* lv = nullptr;
+    int i = 0;
+    for (; i < 5; ++i) {
+        if (!lv) {
+            lv = factory.createLevel(0, expectedSeed, expectedSrcfile);
+        } else {
+            lv = factory.levelup(lv);
+        }
+
+        REQUIRE(lv->getLevelNum() == i);
+        REQUIRE(lv->getSeed() == expectedSeed);
+        REQUIRE(lv->getSrcfile() == expectedSrcfile);
+    }
+
+    lv = factory.levelup(lv);
+    REQUIRE(lv->getLevelNum() == 4);  // level up shouldn't affect level 4
+    REQUIRE(lv->getSeed() == expectedSeed);
+    REQUIRE(lv->getSrcfile() == expectedSrcfile);
+}
+
+TEST_CASE(LevelFactory_Leveldown) {
+    LevelFactory factory;
+    const unsigned int expectedSeed = 2;
+    const std::string expectedSrcfile = "factory_test3.txt";
+
+    Level* lv = nullptr;
+    int i = 4;
+    for (; i >= 0; --i) {
+        if (!lv) {
+            lv = factory.createLevel(4, expectedSeed, expectedSrcfile);
+        } else {
+            lv = factory.leveldown(lv);
+        }
+
+        REQUIRE(lv->getLevelNum() == i);
+        REQUIRE(lv->getSeed() == expectedSeed);
+        REQUIRE(lv->getSrcfile() == expectedSrcfile);
+    }
+
+    lv = factory.leveldown(lv);
+    REQUIRE(lv->getLevelNum() == 0);  // level down shouldn't affect level 0
+    REQUIRE(lv->getSeed() == expectedSeed);
+    REQUIRE(lv->getSrcfile() == expectedSrcfile);
+}
+
+TEST_CASE(Level0_BlockGeneration) {
     const std::string testFilePath = "level0_test_1.txt";
     std::ofstream testFile{testFilePath};
 
@@ -51,7 +101,7 @@ TEST_CASE(Level0BlockGeneration) {
     std::filesystem::remove(testFilePath);
 }
 
-TEST_CASE(Level0BlockGenerationSrcCirculation) {
+TEST_CASE(Level0_BlockGeneration_SrcCirculation) {
     const std::string testFilePath = "level0_test_2.txt";
     std::ofstream testFile{testFilePath};
 

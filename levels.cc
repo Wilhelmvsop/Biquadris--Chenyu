@@ -1,6 +1,6 @@
-export module level;
+export module Levels;
 
-import block;
+import Blocks;
 
 import <utility>;
 import <iostream>;
@@ -25,7 +25,7 @@ export class LevelFactory {
 
 class Level {
    protected:
-    static Block* charToBlock(char c);
+    static Block* charToBlock(char c, int levelNum = 0);
 
     int levelNum;
     Debuff effect;

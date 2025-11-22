@@ -1,6 +1,6 @@
-module level;
+module Levels;
 
-import block;
+import Blocks;
 
 import <cstdlib>;
 import <fstream>;
@@ -43,22 +43,22 @@ void Level::setSrcfile(std::string srcfile) {
 }
 void Level::setSeed(unsigned int seed) { this->seed = seed; }
 
-Block* Level::charToBlock(char c) {
+Block* Level::charToBlock(char c, int levelNum) {
     switch (c) {
         case 'I':
-            return new IBlock();
+            return new IBlock(levelNum);
         case 'J':
-            return new JBlock();
+            return new JBlock(levelNum);
         case 'L':
-            return new LBlock();
+            return new LBlock(levelNum);
         case 'O':
-            return new OBlock();
+            return new OBlock(levelNum);
         case 'S':
-            return new SBlock();
+            return new SBlock(levelNum);
         case 'Z':
-            return new ZBlock();
+            return new ZBlock(levelNum);
         case 'T':
-            return new TBlock();
+            return new TBlock(levelNum);
         default:
             return nullptr;
     }
@@ -93,19 +93,19 @@ Level1::Level1(unsigned int seed) : Level{1, true, DEFAULT_SOURCE_FILE, seed} {}
 Block* Level1::getNextBlock() {
     int rand = std::rand() % 12;
     if (rand == 0) {
-        return new SBlock();
+        return new SBlock(getLevelNum());
     } else if (rand <= 1) {
-        return new ZBlock();
+        return new ZBlock(getLevelNum());
     } else if (rand <= 3) {
-        return new LBlock();
+        return new LBlock(getLevelNum());
     } else if (rand <= 5) {
-        return new OBlock();
+        return new OBlock(getLevelNum());
     } else if (rand <= 7) {
-        return new TBlock();
+        return new TBlock(getLevelNum());
     } else if (rand <= 9) {
-        return new JBlock();
+        return new JBlock(getLevelNum());
     } else {
-        return new IBlock();
+        return new IBlock(getLevelNum());
     }
 }
 
@@ -116,19 +116,19 @@ Level2::Level2(unsigned int seed) : Level{2, true, DEFAULT_SOURCE_FILE, seed} {}
 Block* Level2::getNextBlock() {
     int rand = std::rand() % 7;
     if (rand == 0) {
-        return new SBlock();
+        return new SBlock(getLevelNum());
     } else if (rand == 1) {
-        return new ZBlock();
+        return new ZBlock(getLevelNum());
     } else if (rand == 2) {
-        return new LBlock();
+        return new LBlock(getLevelNum());
     } else if (rand == 3) {
-        return new OBlock();
+        return new OBlock(getLevelNum());
     } else if (rand == 4) {
-        return new TBlock();
+        return new TBlock(getLevelNum());
     } else if (rand == 5) {
-        return new JBlock();
+        return new JBlock(getLevelNum());
     } else {
-        return new IBlock();
+        return new IBlock(getLevelNum());
     }
 }
 
@@ -141,19 +141,19 @@ Level3::Level3(unsigned int seed)
 Block* Level3::randomNextBlock() {
     int rand = std::rand() % 9;
     if (rand <= 1) {
-        return new SBlock();
+        return new SBlock(getLevelNum());
     } else if (rand <= 3) {
-        return new ZBlock();
+        return new ZBlock(getLevelNum());
     } else if (rand == 4) {
-        return new LBlock();
+        return new LBlock(getLevelNum());
     } else if (rand == 5) {
-        return new OBlock();
+        return new OBlock(getLevelNum());
     } else if (rand == 6) {
-        return new TBlock();
+        return new TBlock(getLevelNum());
     } else if (rand == 7) {
-        return new JBlock();
+        return new JBlock(getLevelNum());
     } else {
-        return new IBlock();
+        return new IBlock(getLevelNum());
     }
 }
 
@@ -168,7 +168,7 @@ Block* Level3::getNextBlockFromSrc() {
         src->seekg(0, std::ios::beg);
         (*src) >> nextBlockChar;
     }
-    return charToBlock(nextBlockChar);
+    return charToBlock(nextBlockChar, getLevelNum());
 }
 
 Block* Level3::getNextBlock() {
@@ -183,24 +183,24 @@ Block* Level3::getNextBlock() {
 
 Level4::Level4(unsigned int seed)
     : Level{4, true, DEFAULT_SOURCE_FILE, seed,
-            Debuff{1, false, nullptr, {new BombBlock{}, 5}}} {}
+            Debuff{1, false, nullptr, {new BombBlockCat{getLevelNum()}, 5}}} {}
 
 Block* Level4::randomNextBlock() {
     int rand = std::rand() % 9;
     if (rand <= 1) {
-        return new SBlock();
+        return new SBlock(getLevelNum());
     } else if (rand <= 3) {
-        return new ZBlock();
+        return new ZBlock(getLevelNum());
     } else if (rand == 4) {
-        return new LBlock();
+        return new LBlock(getLevelNum());
     } else if (rand == 5) {
-        return new OBlock();
+        return new OBlock(getLevelNum());
     } else if (rand == 6) {
-        return new TBlock();
+        return new TBlock(getLevelNum());
     } else if (rand == 7) {
-        return new JBlock();
+        return new JBlock(getLevelNum());
     } else {
-        return new IBlock();
+        return new IBlock(getLevelNum());
     }
 }
 
@@ -215,7 +215,7 @@ Block* Level4::getNextBlockFromSrc() {
         src->seekg(0, std::ios::beg);
         (*src) >> nextBlockChar;
     }
-    return charToBlock(nextBlockChar);
+    return charToBlock(nextBlockChar, getLevelNum());
 }
 
 Block* Level4::getNextBlock() {
