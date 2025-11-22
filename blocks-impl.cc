@@ -49,7 +49,7 @@ void Block::setCoords(std::vector<std::pair<int, int>> coords) {
      this->coords = coords;
 }
 
-const std::vector<std::pair<int, int>>& Block::getRotatedCoords(int dir) const {
+std::vector<std::pair<int, int>> Block::getRotatedCoords(bool clockwise) const {
      int min_y = coords[0].first;
      int max_y = coords[0].first;
      int min_x = coords[0].second;
@@ -72,7 +72,7 @@ const std::vector<std::pair<int, int>>& Block::getRotatedCoords(int dir) const {
           int local_x = coord.second - min_x;
           int new_x, new_y;
 
-          if (dir == 0) { // Clockwise rotation
+          if (clockwise) { // Clockwise rotation
                new_x = width - 1 - local_y;
                new_y = local_x;
           }

@@ -15,7 +15,6 @@
 
 NOTES:
 - For block coordinates, set (r, c) (0, 0) as the 15th row first column, number increases downward and to the right
-- For block rotations, 0 = clockwise, 1 = counter-clockwise
 ---
 
 ## Style Guide:
