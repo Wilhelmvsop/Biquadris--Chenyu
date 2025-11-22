@@ -227,9 +227,6 @@ Block* Level4::getNextBlock() {
 }
 
 /////////////////////////// LevelFactory ///////////////////////////
-
-// createLevel return a new level according to levelNum
-// and set the seed and srcfile to a level. returns nullptr if level invalid
 Level* LevelFactory::createLevel(int levelNum, unsigned int seed,
                                  std::string srcfile) {
     Level* res;
@@ -259,9 +256,6 @@ Level* LevelFactory::createLevel(int levelNum, unsigned int seed,
     }
 }
 
-// Levelup returns the one level harder of `level` and delete it.
-// maintains the seed and srcfile, BUT, the randomness
-// behavior is set to default of the level
 Level* LevelFactory::levelup(Level* level) {
     int levelNum = level->getLevelNum();
     if (levelNum == 4) return level;
@@ -275,9 +269,6 @@ Level* LevelFactory::levelup(Level* level) {
     return newLevel;
 }
 
-// Levelup returns the one level easier of `level` and delete it.
-// maintains the seed and srcfile, BUT, the randomness
-// behavior is set to default of the level
 Level* LevelFactory::leveldown(Level* level) {
     int levelNum = level->getLevelNum();
     if (levelNum == 0) return level;

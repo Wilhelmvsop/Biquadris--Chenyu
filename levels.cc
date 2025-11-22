@@ -17,9 +17,19 @@ export struct Debuff {
 
 export class LevelFactory {
    public:
+    // createLevel return a new level according to levelNum
+    // and set the seed and srcfile to a level. returns nullptr if level invalid
     Level* createLevel(int levelNum = 0, unsigned int seed = 1,
                        std::string srcfile = "");
+
+    // Levelup returns the one level harder of `level` and delete it.
+    // maintains the seed and srcfile, BUT, the randomness
+    // behavior is set to default of the level
     Level* levelup(Level* level);
+
+    // Levelup returns the one level easier of `level` and delete it.
+    // maintains the seed and srcfile, BUT, the randomness
+    // behavior is set to default of the level
     Level* leveldown(Level* level);
 };
 
