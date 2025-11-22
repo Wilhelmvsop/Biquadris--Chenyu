@@ -12,7 +12,7 @@ export class Block {
      Block(std::vector<std::pair<int, int>> coords, char ch, int level);
      bool isCleared() const;
      void deleteCoords(std::pair<int, int> target);
-     const std::vector<std::pair<int, int>>& getRotatedCoords(int dir) const;
+     std::vector<std::pair<int, int>> getRotatedCoords(bool clockwise) const;
 
      // getters and setters
      const std::vector<std::pair<int, int>>& getCoords() const;
