@@ -42,7 +42,7 @@ To add a new module:
   0. If needed, add new standard library module (e.g. iostream) <- search GOON0
   1. Add interface file to MODULE_INTERFACES (e.g., list.cc) <- search GOON1
   2. Add implementation file to MODULE_IMPLS (e.g., list-impl.cc) <- search GOON1
-  3. Add dependency rule: $(OBJ_DIR)/list-impl.o: list-impl.cc $(OBJ_DIR)/list.o <- search GOON2
+  3. Add dependency rule: `$(OBJ_DIR)/list-impl.o: list-impl.cc $(OBJ_DIR)/list.o` <- search GOON2
 
 To add tests: create `tests/test_<module>.cc` files
 They will be automatically discovered and compiled
@@ -60,7 +60,6 @@ TESTCASE(TestCaseName) {
     // ... test your thing
     bool ronIsCool = true;
     REQUIRE(ronIsCool == true);
-    REQUIRE_EQ(ronIsCool, true);
 }
 ```
 4. Now you can do `make test`. That's it
