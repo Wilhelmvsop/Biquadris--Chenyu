@@ -4,13 +4,14 @@ PRECOMPILE_FLAGS = -std=c++20 -fmodules-ts -c -x c++-system-header
 
 # Directories
 TEST_DIR = tests
+TEST_RENDER_DIR = test_render
 OBJ_DIR = objects
 
 ##################################################################
 # GOON0: ONLY EDIT THIS SECTION TO ADD NEW STANDARD LIBRARY
 ##################################################################
 SYSTEM_HEADERS = iostream utility algorithm  vector functional cstdlib \
-				 fstream filesystem map stdexcept string
+				 fstream filesystem map unordered_map stdexcept string
 
 ##################################################################
 
@@ -22,10 +23,10 @@ MAIN_SOURCE = main.cc
 # GOON1: ONLY EDIT THIS SECTION TO ADD NEW MODULES
 ##################################################################
 # List your module interface files here (in dependency order)
-MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc
+MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc renderers.cc
 
 # List your module implementation files here (same order as interfaces)
-MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc
+MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc renderers-impl.cc
 #################################################################
 
 # Automatically generate object file names from source files (in objects/ dir)
@@ -48,10 +49,14 @@ TEST_MAIN_OBJECT = $(OBJ_DIR)/test_main.o
 # Test executable
 TEST_EXEC = test_runner
 
+# Source and exec for rendering test
+RENDER_TEST_SOURCES = $(wildcard $(TEST_RENDER_DIR)/*.cc)
+RENDER_TEST_EXECUTABLES = $(patsubst $(TEST_RENDER_DIR)/%.cc, $(OBJ_DIR)/%, $(RENDER_TEST_SOURCES))
+
 # Header compilation marker
 HEADERS_COMPILED = .headers_compiled
 
-.PHONY: all test clean help
+.PHONY: all test test_render clean help
 
 # Default: build main program
 all: $(TARGET)
@@ -68,10 +73,10 @@ $(HEADERS_COMPILED): | gcm.cache
 gcm.cache:
 	@mkdir -p gcm.cache
 
-# Build main program
+# Build main program: -lX11 for linking X lib
 $(TARGET): $(MAIN_OBJECTS)
 	@echo "Building main program..."
-	$(CXX) $(CXXFLAGS) $(MAIN_OBJECTS) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(MAIN_OBJECTS) -lX11 -o $(TARGET)
 
 ##################################################################
 # GOON2: MODULE DEPENDENCIES: Add rules for your modules here
@@ -85,6 +90,9 @@ $(OBJ_DIR)/%.o: %.cc $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/blocks-impl.o: blocks-impl.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/levels.o: levels.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/levels-impl.o: levels-impl.cc $(OBJ_DIR)/levels.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+$(OBJ_DIR)/renderers.o: renderers.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+$(OBJ_DIR)/renderers-impl.o: renderers-impl.cc $(OBJ_DIR)/renderers.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+
 
 # Main depends on all module interfaces
 $(MAIN_OBJECT): $(MAIN_SOURCE) $(MODULE_INTERFACE_OBJECTS) $(HEADERS_COMPILED) | $(OBJ_DIR)
@@ -99,7 +107,7 @@ test: $(TEST_EXEC)
 # Build test executable (uses same module objects as main program)
 $(TEST_EXEC): $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) $(HEADERS_COMPILED)
 	@echo "Linking test executable..."
-	$(CXX) $(CXXFLAGS) $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) -o $(TEST_EXEC)
+	$(CXX) $(CXXFLAGS) $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) -lX11 -o $(TEST_EXEC)
 
 # Compile test runner implementation
 $(TEST_RUNNER_OBJECT): $(TEST_RUNNER_SOURCE) $(HEADERS_COMPILED) | $(OBJ_DIR)
@@ -116,6 +124,22 @@ $(OBJ_DIR)/test_%.o: $(TEST_DIR)/test_%.cc $(MODULE_OBJECTS) $(HEADERS_COMPILED)
 	@echo "Compiling test: $<"
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+##################################################################
+# Renderer Tests (GUI and TUI): Build and run all renderer tests
+test_render: $(RENDER_TEST_EXECUTABLES)
+	@echo "Running renderer tests..."
+	@for test in $(RENDER_TEST_EXECUTABLES); do \
+		echo "Running $$test..."; \
+		./$$test || exit 1; \
+	done
+
+##################################################################
+
+# Build each renderer test executable from test_render/*.cc
+$(OBJ_DIR)/%: $(TEST_RENDER_DIR)/%.cc $(MODULE_OBJECTS) $(HEADERS_COMPILED) | $(OBJ_DIR)
+	@echo "Building renderer test: $<"
+	$(CXX) $(CXXFLAGS) $< $(MODULE_OBJECTS) -lX11 -o $@
+
 # Clean build artifacts
 clean:
 	@echo "Cleaning..."
@@ -127,6 +151,7 @@ help:
 	@echo "Available targets:"
 	@echo "  make        - Build main program ($(TARGET))"
 	@echo "  make test   - Build and run tests"
+	@echo "  make test_render - Build and run renderer tests (GUI/TUI) from test_render/"
 	@echo "  make clean  - Remove all build artifacts"
 	@echo "  make help   - Show this message"
 	@echo ""
@@ -137,4 +162,5 @@ help:
 	@echo "  3. Add dependency rule: \$$(OBJ_DIR)/list-impl.o: list-impl.cc \$$(OBJ_DIR)/list.o <- search GOON2"
 	@echo ""
 	@echo "To add tests: create tests/test_<module>.cc files"
+	@echo "To add rendering tests: create test_render/test_<name>.cc files"
 	@echo "They will be automatically discovered and compiled"
