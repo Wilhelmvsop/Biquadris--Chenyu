@@ -225,7 +225,7 @@ vector<Block*> Board::refreshBlocks() {
 
      auto it = blocks.begin();
      while (it != blocks.end()) {
-          if ((*it)->getCoords().empty()) {
+          if ((*it)->isCleared()) {
                clearedBlocks.emplace_back(*it);
                it = blocks.erase(it);
           }
