@@ -22,10 +22,10 @@ MAIN_SOURCE = main.cc
 # GOON1: ONLY EDIT THIS SECTION TO ADD NEW MODULES
 ##################################################################
 # List your module interface files here (in dependency order)
-MODULE_INTERFACES = blocks.cc levels.cc
+MODULE_INTERFACES = blocks.cc levels.cc renderers.cc
 
 # List your module implementation files here (same order as interfaces)
-MODULE_IMPLS =  blocks-impl.cc levels-impl.cc
+MODULE_IMPLS =  blocks-impl.cc levels-impl.cc renderers-impl.cc
 #################################################################
 
 # Automatically generate object file names from source files (in objects/ dir)
@@ -68,10 +68,10 @@ $(HEADERS_COMPILED): | gcm.cache
 gcm.cache:
 	@mkdir -p gcm.cache
 
-# Build main program
+# Build main program: -lX11 for linking X lib
 $(TARGET): $(MAIN_OBJECTS)
 	@echo "Building main program..."
-	$(CXX) $(CXXFLAGS) $(MAIN_OBJECTS) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(MAIN_OBJECTS) -lX11 -o $(TARGET)
 
 ##################################################################
 # GOON2: MODULE DEPENDENCIES: Add rules for your modules here
@@ -85,6 +85,9 @@ $(OBJ_DIR)/%.o: %.cc $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/blocks-impl.o: blocks-impl.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/levels.o: levels.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/levels-impl.o: levels-impl.cc $(OBJ_DIR)/levels.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+$(OBJ_DIR)/renderers.o: renderers.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+$(OBJ_DIR)/renderers-impl.o: renderers-impl.cc $(OBJ_DIR)/renderers.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+
 
 # Main depends on all module interfaces
 $(MAIN_OBJECT): $(MAIN_SOURCE) $(MODULE_INTERFACE_OBJECTS) $(HEADERS_COMPILED) | $(OBJ_DIR)
@@ -99,7 +102,7 @@ test: $(TEST_EXEC)
 # Build test executable (uses same module objects as main program)
 $(TEST_EXEC): $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) $(HEADERS_COMPILED)
 	@echo "Linking test executable..."
-	$(CXX) $(CXXFLAGS) $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) -o $(TEST_EXEC)
+	$(CXX) $(CXXFLAGS) $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) -lX11 -o $(TEST_EXEC)
 
 # Compile test runner implementation
 $(TEST_RUNNER_OBJECT): $(TEST_RUNNER_SOURCE) $(HEADERS_COMPILED) | $(OBJ_DIR)
