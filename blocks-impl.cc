@@ -107,4 +107,4 @@ ZBlock::ZBlock(int level)
     : Block{{{0, 1}, {0, 2}, {-1, 0}, {-1, 1}}, 'Z', level} {}
 TBlock::TBlock(int level)
     : Block{{{0, 1}, {-1, 0}, {-1, 1}, {-1, 2}}, 'T', level} {}
-BombBlockCat::BombBlockCat(int level) : Block{{{0, 0}}, '#', level} {}
+BombBlockCat::BombBlockCat(int level) : Block{{{0, 0}}, '*', level} {}
