@@ -15,7 +15,7 @@ export class Block {
     std::vector<std::pair<int, int>> getRotatedCoords(bool clockwise) const;
 
     // getters and setters
-    const std::vector<std::pair<int, int>>& getCoords() const;
+    std::vector<std::pair<int, int>> getCoords() const;
     char getChar() const;
     int getMotherLevel() const;
     void setCoords(std::vector<std::pair<int, int>> coords);

@@ -29,7 +29,7 @@ void Block::deleteCoords(std::pair<int, int> target) {
     }
 }
 
-const std::vector<std::pair<int, int>>& Block::getCoords() const {
+std::vector<std::pair<int, int>> Block::getCoords() const {
     return coords;
 }
 
@@ -94,17 +94,17 @@ std::vector<std::pair<int, int>> Block::getRotatedCoords(bool clockwise) const {
 
 // SUBCLASS CONSTRUCTORS
 IBlock::IBlock(int level)
-    : Block{{{0, 0}, {0, 1}, {0, 2}, {0, 3}}, 'I', level} {}
+    : Block{{{3, 0}, {3, 1}, {3, 2}, {3, 3}}, 'I', level} {}
 JBlock::JBlock(int level)
-    : Block{{{0, 0}, {0, 1}, {0, 2}, {-1, 0}}, 'J', level} {}
+    : Block{{{3, 0}, {3, 1}, {3, 2}, {2, 0}}, 'J', level} {}
 LBlock::LBlock(int level)
-    : Block{{{0, 0}, {0, 1}, {0, 2}, {-1, 2}}, 'L', level} {}
+    : Block{{{3, 0}, {3, 1}, {3, 2}, {2, 2}}, 'L', level} {}
 OBlock::OBlock(int level)
-    : Block{{{0, 0}, {0, 1}, {-1, 0}, {-1, 1}}, 'O', level} {}
+    : Block{{{3, 0}, {3, 1}, {2, 0}, {2, 1}}, 'O', level} {}
 SBlock::SBlock(int level)
-    : Block{{{0, 0}, {0, 1}, {-1, 1}, {-1, 2}}, 'S', level} {}
+    : Block{{{3, 0}, {3, 1}, {2, 1}, {2, 2}}, 'S', level} {}
 ZBlock::ZBlock(int level)
-    : Block{{{0, 1}, {0, 2}, {-1, 0}, {-1, 1}}, 'Z', level} {}
+    : Block{{{3, 1}, {3, 2}, {2, 0}, {2, 1}}, 'Z', level} {}
 TBlock::TBlock(int level)
-    : Block{{{0, 1}, {-1, 0}, {-1, 1}, {-1, 2}}, 'T', level} {}
-BombBlockCat::BombBlockCat(int level) : Block{{{0, 0}}, '*', level} {}
+    : Block{{{3, 1}, {2, 0}, {2, 1}, {2, 2}}, 'T', level} {}
+BombBlockCat::BombBlockCat(int level) : Block{{{3, 0}}, '*', level} {}
