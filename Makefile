@@ -23,10 +23,10 @@ MAIN_SOURCE = main.cc
 # GOON1: ONLY EDIT THIS SECTION TO ADD NEW MODULES
 ##################################################################
 # List your module interface files here (in dependency order)
-MODULE_INTERFACES = blocks.cc levels.cc renderers.cc
+MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc renderers.cc
 
 # List your module implementation files here (same order as interfaces)
-MODULE_IMPLS =  blocks-impl.cc levels-impl.cc renderers-impl.cc
+MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc renderers-impl.cc
 #################################################################
 
 # Automatically generate object file names from source files (in objects/ dir)
