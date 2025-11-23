@@ -1,6 +1,8 @@
-export module Renderers;
+module;
 
 #include <X11/Xlib.h>
+
+export module Renderers;
 
 import Blocks;
 import <unordered_map>;
@@ -8,7 +10,8 @@ import <unordered_map>;
 export struct RenderPackage {
     int score;
     int highscore;
-    char[18][11] pixels;
+    // 18 x 11 array, use pointer instead to not copy everything
+    char (*pixels)[11];
     int level;
     Block* nextBlock;
     bool lost;
@@ -17,6 +20,7 @@ export struct RenderPackage {
 export class Renderer {
    public:
     virtual void render(const RenderPackage& p1, const RenderPackage& p2) = 0;
+    virtual ~Renderer() = default;
 };
 
 // I: blue
@@ -38,10 +42,14 @@ export class GuiRenderer : public Renderer {
     int screen;
     GC gc;
 
+    void clearWindow();
+    void renderSplitLine();
+    void renderHalf(const RenderPackage& pkg, bool left);
+
    public:
     // Ctor will prepare everything we need for rendering and create
     // a window for the first time.
     GuiRenderer();
-    ~GuiRenderer();
+    ~GuiRenderer() override;
     void render(const RenderPackage& p1, const RenderPackage& p2) override;
 };
