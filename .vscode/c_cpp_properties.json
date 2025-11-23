@@ -1,0 +1,18 @@
+{
+  "configurations": [
+    {
+      "name": "windows-clang-x64",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "compilerPath": "D:\\x86_64-15.2.0-release-win32-seh-ucrt-rt_v13-rev0\\mingw64\\bin\\g++.exe",
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "intelliSenseMode": "windows-clang-x64",
+      "compilerArgs": [
+        ""
+      ]
+    }
+  ],
+  "version": 4
+}
