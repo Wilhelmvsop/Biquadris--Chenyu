@@ -4,11 +4,13 @@ module;
 
 module Renderers;
 
+import Blocks;
 import <string>;
+import <vector>;
 
 const int GUI_WINDOW_X = 100;
 const int GUI_WINDOW_Y = 100;
-const unsigned int GUI_WINDOW_WIDTH = 800;
+const unsigned int GUI_WINDOW_WIDTH = 700;
 const unsigned int GUI_WINDOW_BORDER_WIDTH = 10;
 // split line width = 2% of window width
 const unsigned int GUI_SPLIT_LINE_PERCENT = 1;
@@ -103,8 +105,11 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
     y += GUI_CELL_WIDTH;
     XDrawString(display, window, gc, x, y, highscoreMsg.c_str(),
                 highscoreMsg.length());
+
+    // draw top part's end line:
+    XDrawLine(display, window, gc, x, y + 10, x + GUI_PLAYER_WINDOW_WIDTH,
+              y + 10);
     XFlush(display);
-    // might draw line here
 
     // render board:
     for (int row = 0; row < 18; ++row, y += GUI_CELL_WIDTH) {
@@ -124,6 +129,26 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
     XSetForeground(display, gc, BlackPixel(display, screen));
     y += GUI_CELL_WIDTH;
     XDrawString(display, window, gc, x, y, nextMsg.c_str(), nextMsg.length());
+
+    if (pkg.nextBlock) {
+        const std::vector<std::pair<int, int>> coords =
+            pkg.nextBlock->getCoords();
+        const unsigned long color = colorMap.at(pkg.nextBlock->getChar());
+        XSetForeground(display, gc, color);
+
+        // offset 5 cells: (xCoord,yCoord) -> (xCoord + 5, yCoord + 3)
+        // (so that (0, 0) coord can be at the middle bottom)
+        const int xOffset = 5;
+        const int yOffset = 3;
+
+        // block use (row, col) coord, so it's (y, x)
+        for (auto& [yCoord, xCoord] : coords) {
+            int xAlias = x + ((xCoord + xOffset) * GUI_CELL_WIDTH);
+            int yAlias = y + ((yCoord + yOffset) * GUI_CELL_WIDTH);
+            XFillRectangle(display, window, gc, xAlias, yAlias, GUI_CELL_WIDTH,
+                           GUI_CELL_WIDTH);
+        }
+    }
 
     XFlush(display);
 }

@@ -78,7 +78,6 @@ $(TARGET): $(MAIN_OBJECTS)
 	@echo "Building main program..."
 	$(CXX) $(CXXFLAGS) $(MAIN_OBJECTS) -lX11 -o $(TARGET)
 
-
 ##################################################################
 # GOON2: MODULE DEPENDENCIES: Add rules for your modules here
 ##################################################################
@@ -163,4 +162,5 @@ help:
 	@echo "  3. Add dependency rule: \$$(OBJ_DIR)/list-impl.o: list-impl.cc \$$(OBJ_DIR)/list.o <- search GOON2"
 	@echo ""
 	@echo "To add tests: create tests/test_<module>.cc files"
+	@echo "To add rendering tests: create test_render/test_<name>.cc files"
 	@echo "They will be automatically discovered and compiled"

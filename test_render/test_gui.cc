@@ -4,8 +4,8 @@ import Blocks;
 import Renderers;
 
 int main() {
-    LBlock* lblock = nullptr;
-    ZBlock* zblock = nullptr;
+    LBlock lblock{1};
+    ZBlock zblock{2};
     char pixels1[18][11] = {
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
@@ -48,8 +48,8 @@ int main() {
         {'O', 'O', 'J', 'J', ' ', 'T', 'I', 'I', 'I', 'I', ' '},
     };
 
-    RenderPackage p1{100, 120, pixels1, 1, lblock, false};
-    RenderPackage p2{140, 200, pixels2, 2, zblock, false};
+    RenderPackage p1{100, 120, pixels1, 1, &lblock, false};
+    RenderPackage p2{140, 200, pixels2, 2, &zblock, false};
 
     GuiRenderer gui{};
     usleep(100000);  // wait 100ms for window is ready
