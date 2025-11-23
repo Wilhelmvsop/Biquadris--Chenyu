@@ -4,6 +4,7 @@ PRECOMPILE_FLAGS = -std=c++20 -fmodules-ts -c -x c++-system-header
 
 # Directories
 TEST_DIR = tests
+TEST_RENDER_DIR = test_render
 OBJ_DIR = objects
 
 ##################################################################
@@ -48,10 +49,14 @@ TEST_MAIN_OBJECT = $(OBJ_DIR)/test_main.o
 # Test executable
 TEST_EXEC = test_runner
 
+# Source and exec for rendering test
+RENDER_TEST_SOURCES = $(wildcard $(TEST_RENDER_DIR)/*.cc)
+RENDER_TEST_EXECUTABLES = $(patsubst $(TEST_RENDER_DIR)/%.cc, $(OBJ_DIR)/%, $(RENDER_TEST_SOURCES))
+
 # Header compilation marker
 HEADERS_COMPILED = .headers_compiled
 
-.PHONY: all test clean help
+.PHONY: all test test_render clean help
 
 # Default: build main program
 all: $(TARGET)
@@ -72,6 +77,7 @@ gcm.cache:
 $(TARGET): $(MAIN_OBJECTS)
 	@echo "Building main program..."
 	$(CXX) $(CXXFLAGS) $(MAIN_OBJECTS) -lX11 -o $(TARGET)
+
 
 ##################################################################
 # GOON2: MODULE DEPENDENCIES: Add rules for your modules here
@@ -119,6 +125,22 @@ $(OBJ_DIR)/test_%.o: $(TEST_DIR)/test_%.cc $(MODULE_OBJECTS) $(HEADERS_COMPILED)
 	@echo "Compiling test: $<"
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+##################################################################
+# Renderer Tests (GUI and TUI): Build and run all renderer tests
+test_render: $(RENDER_TEST_EXECUTABLES)
+	@echo "Running renderer tests..."
+	@for test in $(RENDER_TEST_EXECUTABLES); do \
+		echo "Running $$test..."; \
+		./$$test || exit 1; \
+	done
+
+##################################################################
+
+# Build each renderer test executable from test_render/*.cc
+$(OBJ_DIR)/%: $(TEST_RENDER_DIR)/%.cc $(MODULE_OBJECTS) $(HEADERS_COMPILED) | $(OBJ_DIR)
+	@echo "Building renderer test: $<"
+	$(CXX) $(CXXFLAGS) $< $(MODULE_OBJECTS) -lX11 -o $@
+
 # Clean build artifacts
 clean:
 	@echo "Cleaning..."
@@ -130,6 +152,7 @@ help:
 	@echo "Available targets:"
 	@echo "  make        - Build main program ($(TARGET))"
 	@echo "  make test   - Build and run tests"
+	@echo "  make test_render - Build and run renderer tests (GUI/TUI) from test_render/"
 	@echo "  make clean  - Remove all build artifacts"
 	@echo "  make help   - Show this message"
 	@echo ""
