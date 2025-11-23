@@ -29,7 +29,7 @@ void Block::deleteCoords(std::pair<int, int> target) {
     }
 }
 
-const std::vector<std::pair<int, int>>& Block::getCoords() const {
+std::vector<std::pair<int, int>> Block::getCoords() const {
     return coords;
 }
 
