@@ -11,7 +11,8 @@ OBJ_DIR = objects
 # GOON0: ONLY EDIT THIS SECTION TO ADD NEW STANDARD LIBRARY
 ##################################################################
 SYSTEM_HEADERS = iostream utility algorithm vector functional cstdlib \
-				 fstream filesystem map unordered_map stdexcept tuple string
+				 fstream filesystem map unordered_map stdexcept tuple \
+				 climits string 
 
 ##################################################################
 
@@ -133,6 +134,17 @@ test_render: $(RENDER_TEST_EXECUTABLES)
 		echo "Running $$test..."; \
 		./$$test || exit 1; \
 	done
+
+# Individual renderer test targets
+.PHONY: test_tui test_gui
+
+test_tui: $(OBJ_DIR)/test_tui
+	@echo "Running TUI renderer test..."
+	@./$(OBJ_DIR)/test_tui
+
+test_gui: $(OBJ_DIR)/test_gui
+	@echo "Running GUI renderer test..."
+	@./$(OBJ_DIR)/test_gui
 
 ##################################################################
 
