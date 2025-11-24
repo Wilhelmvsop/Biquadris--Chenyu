@@ -119,16 +119,44 @@ std::string InputHandler::resolve(const std::string &input)
 {
     if (input.empty())
         return std::string("INVALID_CMD");
-    Node *n = findNode(input);
-    if (n && n->isWord)
-        return n->cmd;
-    // else try unique-prefix resolution using subtreeWords/representative
-    Node *node = findNode(input);
-    if (!node)
+
+    // Parse optional leading multiplier digits
+    size_t i = 0;
+    while (i < input.size() && std::isdigit(input[i])) ++i;
+    std::string multiplierStr = input.substr(0, i);
+    std::string rest = input.substr(i);
+
+    if (rest.empty())
         return std::string("INVALID_CMD");
-    if (node->subtreeWords == 1)
-        return node->representative;
-    return std::string("INVALID_CMD");
+
+    // Resolve the rest using existing trie logic
+    Node *n = findNode(rest);
+    std::string resolved;
+    if (n && n->isWord)
+        resolved = n->cmd;
+    else {
+        Node *node = n; // already found
+        if (!node)
+            return std::string("INVALID_CMD");
+        if (node->subtreeWords == 1)
+            resolved = node->representative;
+        else
+            return std::string("INVALID_CMD");
+    }
+
+    // If there was a multiplier prefix, check whether this command permits multipliers.
+    if (!multiplierStr.empty()) {
+        // Commands that do NOT accept a multiplier
+        std::vector<std::string> disallowed = {
+            "restart", "hint", "norandom", "random"
+        };
+        for (auto &d : disallowed) {
+            if (resolved == d)
+                return std::string("INVALID_CMD");
+        }
+    }
+
+    return resolved;
 }
 
 Node *InputHandler::findNode(const std::string &s)
