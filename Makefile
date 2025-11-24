@@ -10,8 +10,8 @@ OBJ_DIR = objects
 ##################################################################
 # GOON0: ONLY EDIT THIS SECTION TO ADD NEW STANDARD LIBRARY
 ##################################################################
-SYSTEM_HEADERS = iostream utility algorithm  vector functional cstdlib \
-				 fstream filesystem map unordered_map stdexcept string
+SYSTEM_HEADERS = iostream utility algorithm vector functional cstdlib \
+				 fstream filesystem map unordered_map stdexcept tuple string
 
 ##################################################################
 
@@ -23,10 +23,10 @@ MAIN_SOURCE = main.cc
 # GOON1: ONLY EDIT THIS SECTION TO ADD NEW MODULES
 ##################################################################
 # List your module interface files here (in dependency order)
-MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc renderers.cc
+MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc board.cc renderers.cc
 
 # List your module implementation files here (same order as interfaces)
-MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc renderers-impl.cc
+MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc board-impl.cc renderers-impl.cc
 #################################################################
 
 # Automatically generate object file names from source files (in objects/ dir)
@@ -90,6 +90,7 @@ $(OBJ_DIR)/%.o: %.cc $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/blocks-impl.o: blocks-impl.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/levels.o: levels.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/levels-impl.o: levels-impl.cc $(OBJ_DIR)/levels.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+$(OBJ_DIR)/board-impl.o: board-impl.cc $(OBJ_DIR)/board.o $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/renderers.o: renderers.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/renderers-impl.o: renderers-impl.cc $(OBJ_DIR)/renderers.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 

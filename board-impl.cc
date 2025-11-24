@@ -1,26 +1,30 @@
 module Board;
 
-import Block;
+import Blocks;
 import <iostream>;
 import <vector>;
 import <utility>;
+import <tuple>;
 
 Board::Board() {}
 Board::~Board() {
-     delete currentBlock;
-     delete nextBlock;
+     if (currentBlock != nullptr) {
+          delete currentBlock;
+     }
+     if (nextBlock != nullptr) {
+          delete nextBlock;
+     }
      
      for (auto block : blocks) {
           delete block;
      }
 }
 
-bool Board::updateCurrentBlock(Block* newBlock) {
-     delete currentBlock;
-     currentBlock = newBlock;
+bool Board::updateCurrentBlock() {
+     currentBlock = nextBlock;
+     nextBlock = nullptr;
      bool fits = true;
      std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
-     blocks.emplace_back(currentBlock);
 
      for (auto coord : coords) {
           if (canvas[coord.first][coord.second] != nullptr) {
@@ -36,7 +40,7 @@ int Board::clear() {
      std::vector<int> rowsToClear;
     
      // get the row numbers thats filled
-     for (int row = 0; row < 15; row++) {
+     for (int row = 0; row < 18; row++) {
           bool rowFilled = true;
           for (int col = 0; col < 11; col++) {
                if (canvas[row][col] == nullptr) {
@@ -58,7 +62,7 @@ int Board::clear() {
                canvas[row][col] = nullptr;
           }
 
-          for (int i = row - 1; i >= 0; i++) {
+          for (int i = row - 1; i >= 0; i--) {
                for (int j = 0; j < 11; j++) {
                     if (canvas[i][j] != nullptr) {
                          std::vector<std::pair<int, int>> coords = canvas[i][j]->getCoords();
@@ -68,7 +72,7 @@ int Board::clear() {
                                    break;
                               }
                          }
-                         canvas[i][j]->updateCoords(coords);
+                         canvas[i][j]->setCoords(coords);
                          canvas[i+1][j] = canvas[i][j];
                          canvas[i][j] = nullptr;
                     }
@@ -77,6 +81,23 @@ int Board::clear() {
      }
 
      return clearedRows;
+}
+
+std::vector<Block*> Board::refreshBlocks() {
+     std::vector<Block*> clearedBlocks;
+
+     auto it = blocks.begin();
+     while (it != blocks.end()) {
+          if ((*it)->isCleared()) {
+               clearedBlocks.emplace_back(*it);
+               it = blocks.erase(it);
+          }
+          else {
+               ++it;
+          }
+     }
+
+     return clearedBlocks;
 }
 
 void Board::left() {
@@ -99,16 +120,16 @@ void Board::left() {
           for (auto coord : coords) {
                canvas[coord.first][coord.second] = currentBlock;
           }
-          std::cout << "Unable to move current block to the left by 1" << std::endl;
+          // std::cout << "Unable to move current block to the left by 1" << std::endl;
      }
      else {
           std::vector<std::pair<int, int>> newCoords;
           for (auto coord : coords) {
-               newCoords.emplace_back({coord.first, coord.second - 1});
+               newCoords.emplace_back(std::make_pair(coord.first, coord.second - 1));
                canvas[coord.first][coord.second - 1] = currentBlock;
           }
           currentBlock->setCoords(newCoords);
-          std::cout << "Moved current block to the left by 1" << std::endl;
+          // std::cout << "Moved current block to the left by 1" << std::endl;
      }
 }
 
@@ -132,16 +153,16 @@ void Board::right() {
           for (auto coord : coords) {
                canvas[coord.first][coord.second] = currentBlock;
           }
-          std::cout << "Unable to move current block to the right by 1" << std::endl;
+          // std::cout << "Unable to move current block to the right by 1" << std::endl;
      }
      else {
           std::vector<std::pair<int, int>> newCoords;
           for (auto coord : coords) {
-               newCoords.emplace_back({coord.first, coord.second + 1});
+               newCoords.emplace_back(std::make_pair(coord.first, coord.second + 1));
                canvas[coord.first][coord.second + 1] = currentBlock;
           }
           currentBlock->setCoords(newCoords);
-          std::cout << "Moved current block to the right by 1" << std::endl;
+          // std::cout << "Moved current block to the right by 1" << std::endl;
      }
 }
 
@@ -165,14 +186,14 @@ void Board::rotate(bool clockwise) {
           for (auto coord : coords) {
                canvas[coord.first][coord.second] = currentBlock;
           }
-          std::cout << "Unable to rotate current block" << std::endl;
+          // std::cout << "Unable to rotate current block" << std::endl;
      }
      else {
           for (auto coord : rotatedCoords) {
                canvas[coord.first][coord.second] = currentBlock;
           }
           currentBlock->setCoords(rotatedCoords);
-          std::cout << "Rotated current block" << std::endl;
+          // std::cout << "Rotated current block" << std::endl;
      }
 }
 
@@ -185,8 +206,8 @@ void Board::down() {
 
      bool canMove = true;
      for (auto coord : coords) {
-          int newRow = coord.first - 1;
-          if (newRow < 0 || canvas[newRow][coord.second] != nullptr) {
+          int newRow = coord.first + 1;
+          if (newRow > 18 || canvas[newRow][coord.second] != nullptr) {
                canMove = false;
                break;
           }
@@ -196,20 +217,20 @@ void Board::down() {
           for (auto coord : coords) {
                canvas[coord.first][coord.second] = currentBlock;
           }
-          std::cout << "Unable to move current block down by 1" << std::endl;
+          // std::cout << "Unable to move current block down by 1" << std::endl;
      }
      else {
           std::vector<std::pair<int, int>> newCoords;
           for (auto coord : coords) {
-               newCoords.emplace_back({coord.first - 1, coord.second});
-               canvas[coord.first - 1][coord.second] = currentBlock;
+               newCoords.emplace_back(std::make_pair(coord.first + 1, coord.second));
+               canvas[coord.first + 1][coord.second] = currentBlock;
           }
           currentBlock->setCoords(newCoords);
-          std::cout << "Moved current block down by 1" << std::endl;
+          // std::cout << "Moved current block down by 1" << std::endl;
      }
 }
 
-void Board::drop() {
+std::tuple<bool, int, std::vector<Block*>> Board::drop() {
      while (true) {
           std::vector<std::pair<int, int>> currentCoords = currentBlock->getCoords();
           down();
@@ -218,21 +239,29 @@ void Board::drop() {
                break;
           }
      }
+
+     blocks.emplace_back(currentBlock);
+     currentBlock = nullptr;
+
+     int rowsCleared = clear();
+     std::vector<Block*> clearedBlocks = refreshBlocks();
+     bool continueGame = updateCurrentBlock();
+     return std::make_tuple(continueGame, rowsCleared, clearedBlocks);
 }
 
-vector<Block*> Board::refreshBlocks() {
-     vector<Block*> clearedBlocks;
-
-     auto it = blocks.begin();
-     while (it != blocks.end()) {
-          if ((*it)->isCleared()) {
-               clearedBlocks.emplace_back(*it);
-               it = blocks.erase(it);
-          }
-          else {
-               ++it;
-          }
+void Board::setCurrentBlock(Block* newBlock) {
+     currentBlock = newBlock;
+     
+     std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
+     for (auto coord : coords) {
+          canvas[coord.first][coord.second] = currentBlock;
      }
+}
+void Board::setNextBlock(Block* newBlock) {
+     nextBlock = newBlock;
+}
 
-     return clearedBlocks;
-} 
+using Canvas = Block*[18][11];
+Canvas& Board::getCanvas() {
+     return canvas;
+}
