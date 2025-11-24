@@ -28,7 +28,7 @@ export class Board {
      // drops the current block and updates it with the next block, sets next block to nullptr
      // first element: whether the next block fits or not (ie check if player loses)
      // second element: number of rows cleared
-     // third element: vector of blocks cleared
+     // third element: vector of blocks cleared (user MUST delete all pointers in this vector after function call)
      std::tuple<bool, int, std::vector<Block*>> drop();
 
      // Setters and getters

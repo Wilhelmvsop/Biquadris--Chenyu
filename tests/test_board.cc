@@ -71,6 +71,9 @@ TEST_CASE(Blocks_Movements) {
      REQUIRE(canvasMatches(canvas1, expected1));
 
      auto dropResult1 = board.drop();
+     for (auto block : std::get<2>(dropResult1)) {
+          delete block;
+     }
      REQUIRE(true == std::get<0>(dropResult1));
 
      Block* expected2[18][11] = {
@@ -244,6 +247,9 @@ TEST_CASE(Blocks_Movements) {
      BombBlockCat* bomb = new BombBlockCat{0};
      board.setNextBlock(bomb);
      auto dropResult2 = board.drop();
+     for (auto block : std::get<2>(dropResult2)) {
+          delete block;
+     }
      REQUIRE(true == std::get<0>(dropResult2));
      Block* expected9[18][11] = {
           {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr},
@@ -278,15 +284,24 @@ TEST_CASE(Clearing) {
      BombBlockCat* bomb = new BombBlockCat{0};
      board.setCurrentBlock(ibp1);
      board.setNextBlock(ibp2);
-     board.drop();
+     auto res1 = board.drop();
+     for (auto block : std::get<2>(res1)) {
+          delete block;
+     }
      board.right();
      board.right();
      board.right();
      board.right();
      board.setNextBlock(obp1);
-     board.drop();
+     auto res2 = board.drop();
+     for (auto block : std::get<2>(res2)) {
+          delete block;
+     }
      board.setNextBlock(jbp1);
-     board.drop();
+     auto res3 = board.drop();
+     for (auto block : std::get<2>(res3)) {
+          delete block;
+     }
 
      Block* expected1[18][11] = {
           {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr},
@@ -345,4 +360,9 @@ TEST_CASE(Clearing) {
      Canvas& canvas2 = board.getCanvas();
      // printCanvas(canvas2);
      REQUIRE(canvasMatches(canvas2, expected2));
+     REQUIRE(1 == std::get<1>(result));
+     REQUIRE(2 == std::get<2>(result).size());
+     for (auto block : std::get<2>(result)) {
+          delete block;
+     }
 }
