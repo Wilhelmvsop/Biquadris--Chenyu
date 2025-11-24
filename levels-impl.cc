@@ -66,7 +66,7 @@ Block* Level::charToBlock(char c, int levelNum) {
 
 Level::~Level() {
     if (src) delete src;
-    // TODO: might have to delete the bomb pointer here
+    if (effect.insert.first) delete effect.insert.first;
 }
 
 /////////////////////////// L0 ///////////////////////////

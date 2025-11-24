@@ -266,4 +266,4 @@ void Board::setNextBlock(Block* newBlock) { nextBlock = newBlock; }
 using Canvas = Block* [18][11];
 Canvas& Board::getCanvas() { return canvas; }
 
-Block* Board::getNextBlock() { return nextBlock; }
+Block* Board::getNextBlock() const { return nextBlock; }
