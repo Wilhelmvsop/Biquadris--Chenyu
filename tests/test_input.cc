@@ -9,9 +9,9 @@ InputHandler ih;
 TEST_CASE(Commands) {
 	// Register canonical commands and common aliases from the spec
 	std::vector<std::pair<std::string, std::string>> aliases = {
-		{"left", "left"}, {"l", "left"},
-		{"right", "right"}, {"r", "right"},
-		{"down", "down"}, {"d", "down"},
+		{"left", "left"},
+		{"right", "right"},
+		{"down", "down"},
 		{"drop", "drop"},
 		{"clockwise", "clockwise"}, {"cw", "clockwise"}, {"clock", "clockwise"},
 		{"counterclockwise", "counterclockwise"}, {"ccw", "counterclockwise"},

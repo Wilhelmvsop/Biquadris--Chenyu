@@ -7,6 +7,9 @@ module Renderers;
 import Blocks;
 import <string>;
 import <vector>;
+import <iostream>;
+import <climits>;
+import <algorithm>;
 
 const int GUI_WINDOW_X = 100;
 const int GUI_WINDOW_Y = 100;
@@ -158,4 +161,122 @@ void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
     renderHalf(p1, true);
     renderSplitLine();
     renderHalf(p2, false);
+}
+
+void TuiRenderer::render(const RenderPackage &p1, const RenderPackage &p2) {
+    // Header lines: level / score / highscore
+    auto printHeader = [](const RenderPackage &p) {
+        auto pad = [](int value, int width) {
+            std::string s = std::to_string(value);
+            if ((int)s.size() < width) s = std::string(width - s.size(), ' ') + s;
+            return s;
+        };
+        std::cout << "Level:" << pad(p.level, 3) << " ";
+        std::cout << "Score:" << pad(p.score, 6) << " ";
+        std::cout << "High:" << pad(p.highscore, 6);
+    };
+
+    // print Level line and Score line separately for each half
+    auto padToWidth = [](const std::string &s, int w) {
+        if ((int)s.size() >= w) return s.substr(0, w);
+        return s + std::string(w - s.size(), ' ');
+    };
+    auto printLevelLine = [&](const RenderPackage &a, const RenderPackage &b) {
+        std::string L = "Level: " + std::to_string(a.level);
+        std::string R = "Level: " + std::to_string(b.level);
+        std::cout << padToWidth(L, 11) << "  " << padToWidth(R, 11) << '\n';
+    };
+    auto printScoreLine = [&](const RenderPackage &a, const RenderPackage &b) {
+        std::string L = "Score: " + std::to_string(a.score);
+        std::string R = "Score: " + std::to_string(b.score);
+        std::cout << padToWidth(L, 11) << "  " << padToWidth(R, 11) << '\n';
+    };
+
+    printLevelLine(p1, p2);
+    printScoreLine(p1, p2);
+
+    // print top dashed separator (centered across the 11 printed columns, with one-space padding each side -> total 13)
+    auto printTopBorder = [](void) {
+        std::cout << std::string(11, '-');
+    };
+    printTopBorder();
+    std::cout << "  ";
+    printTopBorder();
+    std::cout << '\n';
+
+    // print rows (18 rows)
+    for (int r = 0; r < 18; ++r) {
+        // left board row (11 chars, left-aligned)
+        for (int c = 0; c < 11; ++c) {
+            char ch = p1.pixels[r][c];
+            std::cout << (ch == ' ' ? ' ' : ch);
+        }
+
+        std::cout << "  ";
+
+        // right board row (11 chars, left-aligned)
+        for (int c = 0; c < 11; ++c) {
+            char ch = p2.pixels[r][c];
+            std::cout << (ch == ' ' ? ' ' : ch);
+        }
+        std::cout << '\n';
+    }
+
+    // bottom dashed separator aligned with board
+    printTopBorder();
+    std::cout << "  ";
+    printTopBorder();
+    std::cout << '\n';
+
+    // build Next: preview for each half and print side-by-side aligned with board (13 chars per half)
+    auto buildNextVec = [](const RenderPackage &p) {
+        const int halfDisplayWidth = 11; // match board width
+        std::vector<std::string> out;
+        // First line: Next:
+        std::string line = "Next:";
+        if ((int)line.size() < halfDisplayWidth) line += std::string(halfDisplayWidth - line.size(), ' ');
+        out.push_back(line);
+
+        if (!p.nextBlock) {
+            // no block: add a few empty lines
+            for (int i = 0; i < 3; ++i) out.push_back(std::string(halfDisplayWidth, ' '));
+            return out;
+        }
+
+        // compute bounding box of the block's coords
+        auto coords = p.nextBlock->getCoords();
+        char fill = p.nextBlock->getChar();
+        int minR = INT_MAX, maxR = INT_MIN, minC = INT_MAX, maxC = INT_MIN;
+        for (auto &pr : coords) {
+            int r = pr.first;
+            int c = pr.second;
+            minR = std::min(minR, r);
+            maxR = std::max(maxR, r);
+            minC = std::min(minC, c);
+            maxC = std::max(maxC, c);
+        }
+        int H = maxR - minR + 1;
+        int W = maxC - minC + 1;
+        // build minimal shape lines (row major from minR..maxR)
+        for (int r = minR; r <= maxR; ++r) {
+            std::string s;
+            for (int c = minC; c <= maxC; ++c) {
+                bool occupied = false;
+                for (auto &pr : coords) if (pr.first == r && pr.second == c) { occupied = true; break; }
+                s.push_back(occupied ? fill : ' ');
+            }
+            if ((int)s.size() < halfDisplayWidth) s += std::string(halfDisplayWidth - s.size(), ' ');
+            out.push_back(s);
+        }
+        return out;
+    };
+
+    auto leftNext = buildNextVec(p1);
+    auto rightNext = buildNextVec(p2);
+    for (size_t i = 0; i < leftNext.size() || i < rightNext.size(); ++i) {
+        std::string L = i < leftNext.size() ? leftNext[i] : std::string(13, ' ');
+        std::string R = i < rightNext.size() ? rightNext[i] : std::string(13, ' ');
+        std::cout << L << "  " << R << '\n';
+    }
+    std::cout << '\n';
 }

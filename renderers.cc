@@ -53,3 +53,11 @@ export class GuiRenderer : public Renderer {
     ~GuiRenderer() override;
     void render(const RenderPackage& p1, const RenderPackage& p2) override;
 };
+
+// Text-based (terminal) renderer
+export class TuiRenderer : public Renderer {
+  public:
+     TuiRenderer() = default;
+     ~TuiRenderer() override = default;
+     void render(const RenderPackage &p1, const RenderPackage &p2) override;
+};
