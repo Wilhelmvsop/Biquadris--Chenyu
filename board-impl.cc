@@ -254,6 +254,7 @@ std::tuple<bool, int, std::vector<Block*>> Board::drop() {
 }
 
 void Board::setCurrentBlock(Block* newBlock) {
+    delete currentBlock;
     currentBlock = newBlock;
 
     std::vector<std::pair<int, int>> coords = currentBlock->getCoords();

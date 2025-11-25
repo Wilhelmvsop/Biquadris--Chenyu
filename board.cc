@@ -29,16 +29,21 @@ export class Board {
     void right();
     void rotate(bool clockwise);
     void down();
-    // drops the current block and updates it with the next block, sets next
-    // block to nullptr first element: whether the next block fits or not (ie
-    // check if player loses) second element: number of rows cleared third
-    // element: vector of blocks cleared (user MUST delete all pointers in this
-    // vector after function call)
+    // Drops the current block and updates it with the next block, sets next
+    // block to nullptr
+    // First element: whether the next block fits or not (ie check if player
+    // loses)
+    // Second element: number of rows cleared
+    // Third element: vector of
+    // blocks cleared (user MUST delete all pointers in this vector after
+    // function call)
     std::tuple<bool, int, std::vector<Block*>> drop();
 
-    // Setters and getters
-    void setCurrentBlock(
-        Block* newBlock);  // only called ONCE in the beginning, modifies canvas
+    // Setters and getters:
+
+    // setCurrentBlock deletes current block (if exists)
+    // and set newBlock as new current block
+    void setCurrentBlock(Block* newBlock);
     void setNextBlock(Block* newBlock);
     using Canvas = Block* [18][11];
     Canvas& getCanvas();

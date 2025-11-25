@@ -27,14 +27,15 @@ Level::Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
     }
 }
 
-int Level::getLevelNum() { return levelNum; }
-Debuff Level::getDebuff() { return effect; }
-bool Level::getRandom() { return random; }
-unsigned int Level::getSeed() { return seed; }
-std::string Level::getSrcfile() { return srcfile; }
+int Level::getLevelNum() const { return levelNum; }
+Debuff Level::getDebuff() const { return effect; }
+bool Level::getRandom() const { return random; }
+unsigned int Level::getSeed() const{ return seed; }
+std::string Level::getSrcfile() const { return srcfile; }
 
 void Level::setRandom(bool random) { this->random = random; }
 void Level::setSrcfile(std::string srcfile) {
+    if (this->srcfile == srcfile) return;
     this->srcfile = srcfile;
     if (!random) {
         if (src) delete src;

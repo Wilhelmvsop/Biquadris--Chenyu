@@ -29,9 +29,7 @@ void Block::deleteCoords(std::pair<int, int> target) {
     }
 }
 
-std::vector<std::pair<int, int>> Block::getCoords() const {
-    return coords;
-}
+std::vector<std::pair<int, int>> Block::getCoords() const { return coords; }
 
 char Block::getChar() const { return ch; }
 
@@ -92,6 +90,11 @@ std::vector<std::pair<int, int>> Block::getRotatedCoords(bool clockwise) const {
     return rotatedCoords;
 }
 
+Block* Block::clone() const {
+    BlockFactory bf{};
+    return bf.createBlock(ch, motherLevel);
+}
+
 // SUBCLASS CONSTRUCTORS
 IBlock::IBlock(int level)
     : Block{{{3, 0}, {3, 1}, {3, 2}, {3, 3}}, 'I', level} {}
@@ -107,4 +110,27 @@ ZBlock::ZBlock(int level)
     : Block{{{3, 1}, {3, 2}, {2, 0}, {2, 1}}, 'Z', level} {}
 TBlock::TBlock(int level)
     : Block{{{3, 1}, {2, 0}, {2, 1}, {2, 2}}, 'T', level} {}
-BombBlockCat::BombBlockCat(int level) : Block{{{3, 0}}, '*', level} {}
+BombBlockCat::BombBlockCat(int level) : Block{{{3, 5}}, '*', level} {}
+
+Block* BlockFactory::createBlock(char c, int level) const {
+    switch (c) {
+        case 'I':
+            return new IBlock(level);
+        case 'J':
+            return new JBlock(level);
+        case 'L':
+            return new LBlock(level);
+        case 'O':
+            return new OBlock(level);
+        case 'S':
+            return new SBlock(level);
+        case 'Z':
+            return new ZBlock(level);
+        case 'T':
+            return new TBlock(level);
+        case '*':
+            return new BombBlockCat(level);
+        default:
+            return nullptr;
+    }
+}

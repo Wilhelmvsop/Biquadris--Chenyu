@@ -13,6 +13,16 @@ export struct Debuff {
     bool blind;
     Block* force;
     std::pair<Block*, int> insert;
+
+    // add up the debuff
+    Debuff operator+(const Debuff& other) {
+        Debuff res{};
+        res.heaviness = heaviness + other.heaviness;
+        res.blind = blind || other.blind;
+        res.force = force ? force : other.force;
+        res.insert = insert.first ? insert : other.insert;
+        return res;
+    }
 };
 
 export class LevelFactory {
@@ -22,12 +32,12 @@ export class LevelFactory {
     Level* createLevel(int levelNum = 0, unsigned int seed = 1,
                        std::string srcfile = "");
 
-    // Levelup returns the one level harder of `level` and delete it.
+    // Levelup returns the one level harder of `level` and delete the old one.
     // maintains the seed and srcfile, BUT, the randomness
     // behavior is set to default of the level
     Level* levelup(Level* level);
 
-    // Levelup returns the one level easier of `level` and delete it.
+    // Levelup returns the one level easier of `level` and delete the old one.
     // maintains the seed and srcfile, BUT, the randomness
     // behavior is set to default of the level
     Level* leveldown(Level* level);
@@ -55,11 +65,11 @@ class Level {
           Debuff debuff = Debuff{});
     virtual Block* getNextBlock() = 0;
 
-    int getLevelNum();
-    Debuff getDebuff();
-    bool getRandom();
-    unsigned int getSeed();
-    std::string getSrcfile();
+    int getLevelNum() const;
+    Debuff getDebuff() const;
+    bool getRandom() const;
+    unsigned int getSeed() const;
+    std::string getSrcfile() const;
 
     virtual ~Level();
 
