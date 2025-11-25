@@ -505,7 +505,6 @@ TEST_CASE(Player_PlayRestart) {
     removeSeqFile(testFilePath);
 }
 
-// TODO test level 4 bomb
 TEST_CASE(Player_Level4) {
     std::string testFilePath = "test_playerL4.txt";
     std::string testContent = "I J L";

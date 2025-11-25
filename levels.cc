@@ -64,6 +64,8 @@ class Level {
     std::string getSrcfile() const;
 
     void setRandom(bool random);
+    // set source file name and open it if need be (level 0 or norandom)
+    // in prod build, throw error message if file not exists
     void setSrcfile(std::string srcfile);
     void setSeed(unsigned int seed);
 
