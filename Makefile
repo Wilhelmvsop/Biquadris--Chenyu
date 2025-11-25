@@ -101,6 +101,7 @@ $(MAIN_OBJECT): $(MAIN_SOURCE) $(MODULE_INTERFACE_OBJECTS) $(HEADERS_COMPILED) |
 ##################################################################
 
 # Build and run tests
+test: CXXFLAGS += -DTESTING
 test: $(TEST_EXEC)
 	@echo "Running tests..."
 	@./$(TEST_EXEC)

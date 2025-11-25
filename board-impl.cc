@@ -254,7 +254,15 @@ std::tuple<bool, int, std::vector<Block*>> Board::drop() {
 }
 
 void Board::setCurrentBlock(Block* newBlock) {
-    delete currentBlock;
+    // if exists, remove currentBlock's pixels from canvas and free it
+    if (currentBlock) {
+        std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
+        for (auto coord : coords) {
+            canvas[coord.first][coord.second] = nullptr;
+        }
+        delete currentBlock;
+    }
+
     currentBlock = newBlock;
 
     std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
@@ -268,3 +276,4 @@ using Canvas = Block* [18][11];
 Canvas& Board::getCanvas() { return canvas; }
 
 Block* Board::getNextBlock() const { return nextBlock; }
+Block* Board::getCurrentBlock() const { return currentBlock; }

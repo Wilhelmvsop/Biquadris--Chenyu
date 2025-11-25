@@ -7,6 +7,7 @@ import Board;
 import <iostream>;
 import <string>;
 import <tuple>;
+import <utility>;
 
 Player::Player(Level* level, std::istream* input)
     : level{level},
@@ -121,11 +122,11 @@ PlayResult Player::play(const std::string& command, const Debuff& debuff,
             // check special action
             if (numRowsCleared >= 2) {
                 std::string specialAction;
-                // TODO: don't want to contaminate my test. but also want user
-                // to see the prompt
+#ifndef TESTING
                 std::cout << "Choose your special action (blind, heavy, force "
                              "[block]): ";
-                while (input >> specialAction) {
+#endif
+                while ((*input) >> specialAction) {
                     if ("blind" == specialAction) {
                         res.debuff.blind = true;
                         break;
@@ -135,21 +136,37 @@ PlayResult Player::play(const std::string& command, const Debuff& debuff,
                     } else if ("force" == specialAction) {
                         char forcedBlock;
                         BlockFactory bf;
-                        input >> forcedBlock;
+                        (*input) >> forcedBlock;
                         Block* forcedBlockPtr =
                             bf.createBlock(forcedBlock, level->getLevelNum());
                         res.debuff.force = forcedBlockPtr;
                         break;
                     } else {
+#ifndef TESTING
                         std::cout << std::endl << "Invalid effect. Try again: ";
+#endif
                     }
                 }
             }
 
+            // deal with debuff.insert
             ++numBlockPlaced;
-            if (debuff.insert.first &&
-                (numBlocksPlaced % debuff.insert.second) == 0) {
+            Block* insertedBlock = debuff.insert.first;
+            int whenToInsert = debuff.insert.second;
+            if (insertedBlock && (numBlocksPlaced % whenToInsert == 0)) {
+                Block* currentBlock = board->getCurrentBlock();
+                board->setCurrentBlock(insertedBlock->clone());
+                board->setNextBlock(currentBlock);
+                auto bombDropResult = board->drop();
+                score += calculateRowScore(std::get<1>(bombDropResult));
+                score += calculateBlockScore(std::get<2>(bombDropResult));
+                if (std::get<0>(bombDropResult)) {
+                    res.status = PlayStatus::Lost;
+                    return res;
+                }
             }
+
+            board->setNextBlock(level->getNextBlock());
 
             break;
         case "levelup":

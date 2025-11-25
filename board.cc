@@ -47,5 +47,6 @@ export class Board {
     void setNextBlock(Block* newBlock);
     using Canvas = Block* [18][11];
     Canvas& getCanvas();
-    Block* getNextBlock() const;  // getter for nextBlock
+    Block* getNextBlock() const;
+    Block* getCurrentBlock() const;
 };
