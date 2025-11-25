@@ -49,6 +49,7 @@ export class Player {
     Block* getNextBlock() const;
     int getScore() const;
     int getHighscore() const;
+    int getLevelNum() const;
 
     // set new source of input and delete the old one
     void setInput(std::istream* newInput);

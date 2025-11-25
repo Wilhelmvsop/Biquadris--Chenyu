@@ -58,6 +58,7 @@ Level::Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
       seed{seed},
       effect{debuff} {
     if (!random) {
+        // TODO: if srcfile not exists, should throw
         src = new std::ifstream{srcfile};
     } else {
         std::srand(seed);
@@ -76,6 +77,7 @@ void Level::setSrcfile(std::string srcfile) {
     this->srcfile = srcfile;
     if (!random) {
         if (src) delete src;
+        // TODO: if srcfile not exists, should throw
         src = new std::ifstream{srcfile};
     }
 }

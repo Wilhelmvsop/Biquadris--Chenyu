@@ -55,5 +55,5 @@ int main() {
     usleep(100000);  // wait 100ms for window is ready
     gui.render(p1, p2);
 
-    sleep(100);
+    sleep(5);
 }

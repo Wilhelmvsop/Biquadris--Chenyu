@@ -33,6 +33,7 @@ Block* Player::getCurrentBlock() const { return board->getCurrentBlock(); }
 Block* Player::getNextBlock() const { return board->getNextBlock(); }
 int Player::getScore() const { return score; }
 int Player::getHighscore() const { return highscore; }
+int Player::getLevelNum() const { return level->getLevelNum(); }
 
 const char (*Player::getPixels(const Debuff& debuff) const)[11] {
     // add up the current debuff with permanent debuff
@@ -113,7 +114,8 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
         if (score > highscore) highscore = score;
 
         // check if lost
-        if (!std::get<0>(dropResult)) {
+        bool curBlockFit = std::get<0>(dropResult);
+        if (!curBlockFit) {
             res.status = PlayStatus::Lost;
             return res;
         }
@@ -154,12 +156,15 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
         int whenToInsert = debuff.insert.second;
         if (insertedBlock && (numBlocksPlaced % whenToInsert == 0)) {
             Block* currentBlock = board->getCurrentBlock();
+            Block* clonedCurrentBlock = currentBlock->clone();
+            // this will delete currentBlock, so we need to clone it before hand
             board->setCurrentBlock(insertedBlock->clone());
-            board->setNextBlock(currentBlock);
+            board->setNextBlock(clonedCurrentBlock);
             auto bombDropResult = board->drop();
             score += calculateRowScore(std::get<1>(bombDropResult));
             score += calculateBlockScore(std::get<2>(bombDropResult));
-            if (std::get<0>(bombDropResult)) {
+            bool curBlockFit = std::get<0>(bombDropResult);
+            if (!curBlockFit) {
                 res.status = PlayStatus::Lost;
                 return res;
             }
@@ -206,7 +211,7 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
         Block* firstBlock = level->getNextBlock();
         board->setCurrentBlock(firstBlock);
         Block* nextBlock = level->getNextBlock();
-        board->setNextBlock(firstBlock);
+        board->setNextBlock(nextBlock);
 
         // reset debuff
         debuffs = level->getDebuff();
