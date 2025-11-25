@@ -10,10 +10,10 @@ export class Board {
     Block* nextBlock = nullptr;
     std::vector<Block*> blocks = {};
 
-    bool updateCurrentBlock();  // true if currentBlock fits on canvas and false
-                                // otherwise
-    int
-    clear();  // clears any rows thats filled and return number of rows cleared
+    // true if currentBlock fits on canvas and false otherwise
+    bool updateCurrentBlock();
+    // clears any rows thats filled and return number of rows cleared
+    int clear();
     // Updates blocks vector to remove any pointer that points to blocks whose
     // coordinates are all erased returns vector of heap allocated Block
     // objects, user needs to delete pointers after use
