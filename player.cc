@@ -1,15 +1,21 @@
 export module Player;
 
-import <string>;
-
-import Levels;
 import Board;
+import Blocks;
+import Levels;
+
+import <string>;
+import <vector>;
 
 export enum class PlayStatus { Endturn, Continue, Lost };
 
 export struct PlayResult {
     PlayStatus status;
     Debuff debuff;
+
+    bool operator==(const PlayResult& other) const {
+        return status == other.status && debuff == other.debuff;
+    }
 };
 
 export class Player {
@@ -38,11 +44,12 @@ export class Player {
     // get current debuff in the turn and returns
     // const 18x11 array represent pixels in the board
     // require: caller must delete[] after use
-    const char (*getPixels(const Debuff& debuff) const)[11];
+    const char (*getPixels(const Debuff& debuff = {}) const)[11];
+    Block* getCurrentBlock() const;
     Block* getNextBlock() const;
     int getScore() const;
     int getHighscore() const;
 
     // set new source of input and delete the old one
-    void setInput(*std::istream newInput);
+    void setInput(std::istream* newInput);
 };

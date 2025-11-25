@@ -14,15 +14,10 @@ export struct Debuff {
     Block* force;
     std::pair<Block*, int> insert;
 
+    bool operator==(const Debuff& other) const;
     // add up the debuff
-    Debuff operator+(const Debuff& other) {
-        Debuff res{};
-        res.heaviness = heaviness + other.heaviness;
-        res.blind = blind || other.blind;
-        res.force = force ? force : other.force;
-        res.insert = insert.first ? insert : other.insert;
-        return res;
-    }
+    Debuff operator+(const Debuff& other) const;
+    void operator+=(const Debuff& other);
 };
 
 export class LevelFactory {
@@ -56,20 +51,21 @@ class Level {
     std::istream* src;
     std::string srcfile;
 
-    void setRandom(bool random);
-    void setSrcfile(std::string srcfile);
-    void setSeed(unsigned int seed);
-
    public:
     Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
           Debuff debuff = Debuff{});
     virtual Block* getNextBlock() = 0;
 
+    // getters and setters:
     int getLevelNum() const;
     Debuff getDebuff() const;
     bool getRandom() const;
     unsigned int getSeed() const;
     std::string getSrcfile() const;
+
+    void setRandom(bool random);
+    void setSrcfile(std::string srcfile);
+    void setSeed(unsigned int seed);
 
     virtual ~Level();
 

@@ -10,6 +10,43 @@ import <utility>;
 
 const std::string DEFAULT_SOURCE_FILE = "sequence1.txt";
 
+/////////////////////////// Debuff ///////////////////////////
+
+bool Debuff::operator==(const Debuff& other) const {
+    bool insertEq = false;
+    if (insert.first && other.insert.first) {
+        insertEq = insert.first->getChar() == other.insert.first->getChar();
+    } else if (!insert.first && !other.insert.first) {
+        insertEq = true;
+    } else {
+        insertEq = false;
+    }
+
+    bool forceEq = false;
+    if (force && other.force) {
+        forceEq = force->getChar() == other.force->getChar();
+    } else if (!force && !other.force) {
+        forceEq = true;
+    } else {
+        forceEq = false;
+    }
+
+    return (insertEq && insert.second == other.insert.second &&
+            heaviness == other.heaviness && blind == other.blind && forceEq);
+}
+
+// add up the debuff
+Debuff Debuff::operator+(const Debuff& other) const {
+    Debuff res{};
+    res.heaviness = heaviness + other.heaviness;
+    res.blind = blind || other.blind;
+    res.force = force ? force : other.force;
+    res.insert = insert.first ? insert : other.insert;
+    return res;
+}
+
+void Debuff::operator+=(const Debuff& other) { *this = (*this) + other; }
+
 /////////////////////////// Level ///////////////////////////
 
 Level::Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
@@ -30,7 +67,7 @@ Level::Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
 int Level::getLevelNum() const { return levelNum; }
 Debuff Level::getDebuff() const { return effect; }
 bool Level::getRandom() const { return random; }
-unsigned int Level::getSeed() const{ return seed; }
+unsigned int Level::getSeed() const { return seed; }
 std::string Level::getSrcfile() const { return srcfile; }
 
 void Level::setRandom(bool random) { this->random = random; }

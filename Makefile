@@ -23,10 +23,10 @@ MAIN_SOURCE = main.cc
 # GOON1: ONLY EDIT THIS SECTION TO ADD NEW MODULES
 ##################################################################
 # List your module interface files here (in dependency order)
-MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc board.cc renderers.cc
+MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc board.cc renderers.cc player.cc
 
 # List your module implementation files here (same order as interfaces)
-MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc board-impl.cc renderers-impl.cc
+MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc board-impl.cc renderers-impl.cc player-impl.cc
 #################################################################
 
 # Automatically generate object file names from source files (in objects/ dir)
@@ -93,6 +93,8 @@ $(OBJ_DIR)/levels-impl.o: levels-impl.cc $(OBJ_DIR)/levels.o $(HEADERS_COMPILED)
 $(OBJ_DIR)/board-impl.o: board-impl.cc $(OBJ_DIR)/board.o $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/renderers.o: renderers.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/renderers-impl.o: renderers-impl.cc $(OBJ_DIR)/renderers.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+$(OBJ_DIR)/player.o: player.cc $(OBJ_DIR)/board.o $(OBJ_DIR)/blocks.o $(OBJ_DIR)/levels.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+$(OBJ_DIR)/player-impl.o: player-impl.cc $(OBJ_DIR)/player.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 
 
 # Main depends on all module interfaces

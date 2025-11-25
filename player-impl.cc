@@ -21,7 +21,7 @@ Player::Player(Level* level, std::istream* input)
     Block* firstBlock = level->getNextBlock();
     board->setCurrentBlock(firstBlock);
     Block* nextBlock = level->getNextBlock();
-    board->setNextBlock(firstBlock);
+    board->setNextBlock(nextBlock);
 }
 
 Player::~Player() {
@@ -29,17 +29,20 @@ Player::~Player() {
     delete board;
 }
 
+Block* Player::getCurrentBlock() const { return board->getCurrentBlock(); }
 Block* Player::getNextBlock() const { return board->getNextBlock(); }
 int Player::getScore() const { return score; }
 int Player::getHighscore() const { return highscore; }
 
 const char (*Player::getPixels(const Debuff& debuff) const)[11] {
-    debuff += debuffs;  // add up the current debuff with permanent debuff
-    Canvas& canvas = board->getCanvas();
+    // add up the current debuff with permanent debuff
+    Debuff curDebuff = debuff + debuffs;
+    Board::Canvas& canvas = board->getCanvas();
     char (*res)[11] = new char[18][11];
     for (int row = 0; row < 18; ++row) {
         for (int col = 0; col < 11; ++col) {
-            if (debuff.blind && row >= 2 && row <= 11 && col >= 2 && col <= 8) {
+            if (curDebuff.blind && row >= 2 && row <= 11 && col >= 2 &&
+                col <= 8) {
                 res[row][col] = '?';
             } else if (canvas[row][col]) {
                 res[row][col] = canvas[row][col]->getChar();
@@ -73,153 +76,143 @@ int Player::calculateBlockScore(
 }
 
 // TODO: centralize command, not in here
-PlayResult Player::play(const std::string& command, const Debuff& debuff,
+PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
                         const std::string& extra) {
-    debuff += debuffs;  // add up current turn debuff with our permanent debuff
-
+    // add up current turn debuff with our permanent debuff
+    Debuff debuff = playDebuff + debuffs;
     if (debuff.force) {
         board->setCurrentBlock(debuff.force);
     }
 
-    PlayResult res{PlayStatus::Continue, {0, false, nullptr, {nullptr, 5}}};
-    switch (command) {
-        case "left":
-            board->left();
-            for (int i = 0; i < debuff.heaviness; ++i) {
-                board->down();
-            }
-            break;
-        case "right":
-            board->right();
-            for (int i = 0; i < debuff.heaviness; ++i) {
-                board->down();
-            }
-            break;
-        case "down":
+    PlayResult res{PlayStatus::Continue, {0, false, nullptr, {nullptr, 1}}};
+    if (command == "left") {
+        board->left();
+        for (int i = 0; i < debuff.heaviness; ++i) {
             board->down();
-            break;
-        case "clockwise":
-            board->rotate(true);
-            break;
-        case "counterclockwise":
-            board->rotate(false);
-            break;
-        case "drop":
-            auto dropResult = board->drop();
-            int numRowsCleared = std::get<1>(dropResult);
+        }
+    } else if (command == "right") {
+        board->right();
+        for (int i = 0; i < debuff.heaviness; ++i) {
+            board->down();
+        }
 
-            // deal with scores
-            score += calculateRowScore(numRowsCleared);
-            score += calculateBlockScore(std::get<2>(dropResult));
-            if (score > highscore) highscore = score;
+    } else if (command == "down") {
+        board->down();
+    } else if (command == "clockwise") {
+        board->rotate(true);
+    } else if (command == "counterclockwise") {
+        board->rotate(false);
+    } else if (command == "drop") {
+        res.status = PlayStatus::Endturn;
+        auto dropResult = board->drop();
+        int numRowsCleared = std::get<1>(dropResult);
 
-            // check if lost
-            if (!std::get<0>(dropResult)) {
+        // deal with scores
+        score += calculateRowScore(numRowsCleared);
+        score += calculateBlockScore(std::get<2>(dropResult));
+        if (score > highscore) highscore = score;
+
+        // check if lost
+        if (!std::get<0>(dropResult)) {
+            res.status = PlayStatus::Lost;
+            return res;
+        }
+
+        // check special action
+        if (numRowsCleared >= 2) {
+            std::string specialAction;
+#ifndef TESTING
+            std::cout << "Choose your special action (blind, heavy, force "
+                         "[block]): ";
+#endif
+            while ((*input) >> specialAction) {
+                if ("blind" == specialAction) {
+                    res.debuff.blind = true;
+                    break;
+                } else if ("heavy" == specialAction) {
+                    res.debuff.heaviness = 1;
+                    break;
+                } else if ("force" == specialAction) {
+                    char forcedBlock;
+                    BlockFactory bf;
+                    (*input) >> forcedBlock;
+                    Block* forcedBlockPtr =
+                        bf.createBlock(forcedBlock, level->getLevelNum());
+                    res.debuff.force = forcedBlockPtr;
+                    break;
+                } else {
+#ifndef TESTING
+                    std::cout << std::endl << "Invalid effect. Try again: ";
+#endif
+                }
+            }
+        }
+
+        // deal with debuff.insert
+        ++numBlocksPlaced;
+        Block* insertedBlock = debuff.insert.first;
+        int whenToInsert = debuff.insert.second;
+        if (insertedBlock && (numBlocksPlaced % whenToInsert == 0)) {
+            Block* currentBlock = board->getCurrentBlock();
+            board->setCurrentBlock(insertedBlock->clone());
+            board->setNextBlock(currentBlock);
+            auto bombDropResult = board->drop();
+            score += calculateRowScore(std::get<1>(bombDropResult));
+            score += calculateBlockScore(std::get<2>(bombDropResult));
+            if (std::get<0>(bombDropResult)) {
                 res.status = PlayStatus::Lost;
                 return res;
             }
+        }
 
-            // check special action
-            if (numRowsCleared >= 2) {
-                std::string specialAction;
-#ifndef TESTING
-                std::cout << "Choose your special action (blind, heavy, force "
-                             "[block]): ";
-#endif
-                while ((*input) >> specialAction) {
-                    if ("blind" == specialAction) {
-                        res.debuff.blind = true;
-                        break;
-                    } else if ("heavy" == specialAction) {
-                        res.debuff.heavy = 1;
-                        break;
-                    } else if ("force" == specialAction) {
-                        char forcedBlock;
-                        BlockFactory bf;
-                        (*input) >> forcedBlock;
-                        Block* forcedBlockPtr =
-                            bf.createBlock(forcedBlock, level->getLevelNum());
-                        res.debuff.force = forcedBlockPtr;
-                        break;
-                    } else {
-#ifndef TESTING
-                        std::cout << std::endl << "Invalid effect. Try again: ";
-#endif
-                    }
-                }
-            }
-
-            // deal with debuff.insert
-            ++numBlockPlaced;
-            Block* insertedBlock = debuff.insert.first;
-            int whenToInsert = debuff.insert.second;
-            if (insertedBlock && (numBlocksPlaced % whenToInsert == 0)) {
-                Block* currentBlock = board->getCurrentBlock();
-                board->setCurrentBlock(insertedBlock->clone());
-                board->setNextBlock(currentBlock);
-                auto bombDropResult = board->drop();
-                score += calculateRowScore(std::get<1>(bombDropResult));
-                score += calculateBlockScore(std::get<2>(bombDropResult));
-                if (std::get<0>(bombDropResult)) {
-                    res.status = PlayStatus::Lost;
-                    return res;
-                }
-            }
-
-            board->setNextBlock(level->getNextBlock());
-
-            break;
-        case "levelup":
-            LevelFactory lf;
-            level = lf.levelup(level);
-            break;
-        case "leveldown":
-            LevelFactory lf;
-            level = lf.leveldown(level);
-            break;
+        board->setNextBlock(level->getNextBlock());
+    } else if (command == "levelup") {
+        LevelFactory lf;
+        level = lf.levelup(level);
+    } else if (command == "leveldown") {
+        LevelFactory lf;
+        level = lf.leveldown(level);
+    } else if (command == "norandom") {
         // turn off random mode for level 3-4
         // then set the srcfile to the target srcfile
         // (if level 0-2, do nothing)
-        case "norandom":
-            if (level->getLevelNum() >= 3) {
-                std::string srcfile = extra;
-                level->setRandom(false);
-                level->setSrcfile(srcfile);
-            }
-            break;
+        if (level->getLevelNum() >= 3) {
+            std::string srcfile = extra;
+            level->setRandom(false);
+            level->setSrcfile(srcfile);
+        }
 
+    } else if (command == "random") {
         // turn on random mode for level 3-4 (if level 0-2, do nothing)
-        case "random":
-            int levelNum = level->getLevelNum();
-            if (levelNum >= 3) {
-                level->setRandom(true);
-            }
-            break;
-        case "restart":
-            score = 0;
-            numBlocksPlace = 0;
 
-            // reset level
-            LevelFactory lf{};
-            unsigned int seed = level->getSeed();
-            std::string srcfile = level->getSrcfile();
-            delete level;
-            level = lf.createLevel(initLevel, seed, srcfile);
+        int levelNum = level->getLevelNum();
+        if (levelNum >= 3) {
+            level->setRandom(true);
+        }
+    } else if (command == "restart") {
+        score = 0;
+        numBlocksPlaced = 0;
 
-            // reset board
-            delete board;
-            board = new Board{};
-            Block* firstBlock = level->getNextBlock();
-            board->setCurrentBlock(firstBlock);
-            Block* nextBlock = level->getNextBlock();
-            board->setNextBlock(firstBlock);
+        // reset level
+        LevelFactory lf{};
+        unsigned int seed = level->getSeed();
+        std::string srcfile = level->getSrcfile();
+        delete level;
+        level = lf.createLevel(initLevel, seed, srcfile);
 
-            // reset debuff
-            debuffs = level->getDebuff();
+        // reset board
+        delete board;
+        board = new Board{};
+        Block* firstBlock = level->getNextBlock();
+        board->setCurrentBlock(firstBlock);
+        Block* nextBlock = level->getNextBlock();
+        board->setNextBlock(firstBlock);
 
-            break;
-        default:
-            throw "invalid command"
+        // reset debuff
+        debuffs = level->getDebuff();
+    } else {
+        throw "invalid command";
     }
+
     return res;
 }
