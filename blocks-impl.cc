@@ -134,3 +134,8 @@ Block* BlockFactory::createBlock(char c, int level) const {
             return nullptr;
     }
 }
+
+bool BlockFactory::isValidChar(char c) const {
+    const std::string validChars = "IJLOSZT*";
+    return validChars.find(c) != std::string::npos;
+}

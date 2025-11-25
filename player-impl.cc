@@ -194,6 +194,10 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
         if (levelNum >= 3) {
             level->setRandom(true);
         }
+        // for command I, J, ...
+    } else if (command.length() == 1 &&
+               BlockFactory().isValidChar(command[0])) {
+        board->setCurrentBlock(BlockFactory().createBlock(command[0]));
     } else if (command == "restart") {
         score = 0;
         numBlocksPlaced = 0;

@@ -6,6 +6,8 @@ export class Block;
 
 export class BlockFactory {
    public:
+    // check if char c is valid input for producing a block
+    bool isValidChar(char c) const;
     // create block specify by character c
     // needs level for block creation
     // return nullptr if c invalid

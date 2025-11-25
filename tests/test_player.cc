@@ -470,6 +470,25 @@ TEST_CASE(Player_PlayRandom) {
     removeSeqFile(testFilePath);
 }
 
+TEST_CASE(Player_PlayChar) {
+    std::string testFilePath = "test_playchar.txt";
+    std::string testContent = "I J";
+    setupSeqFile(testFilePath, testContent);
+
+    LevelFactory lf;
+    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Debuff d{};
+
+    REQUIRE(Zibo.getCurrentBlock()->getChar() == 'I');
+    REQUIRE(Zibo.getNextBlock()->getChar() == 'J');
+
+    Zibo.play("L", d);
+    REQUIRE(Zibo.getCurrentBlock()->getChar() == 'L');
+    REQUIRE(Zibo.getNextBlock()->getChar() == 'J');
+
+    removeSeqFile(testFilePath);
+}
+
 TEST_CASE(Player_PlayRestart) {
     std::string testFilePath = "test_playrestart.txt";
     std::string testContent = "I I J";
