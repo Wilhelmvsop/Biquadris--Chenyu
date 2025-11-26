@@ -17,6 +17,7 @@ import <vector>;
 static void setupFile(const std::string &path, const std::string &content) {
     std::ofstream f{path};
     f << content;
+    f.close();
 }
 
 static void removeFile(const std::string &path) { std::filesystem::remove(path); }
@@ -57,6 +58,7 @@ TEST_CASE(Game_CommandForwarding_NoRenderer) {
 
 // Sequence command switches input to file and back to stream
 TEST_CASE(Game_Sequence_Command_SwitchInput) {
+    setupFile("sequence1.txt", "I J L O S Z T\n");
     std::string seqPath = "test_seq_game.txt";
     setupFile(seqPath, "levelup\nleveldown\n");
     std::stringstream ss;
@@ -69,10 +71,12 @@ TEST_CASE(Game_Sequence_Command_SwitchInput) {
     // After levelup then leveldown, level returns to 0
     REQUIRE(g.getPlayer(1)->getLevelNum() == 0);
     removeFile(seqPath);
+    removeFile("sequence1.txt");
 }
 
 // Restart resets score but keeps highscore
 TEST_CASE(Game_Restart_Resets_State) {
+    setupFile("sequence1.txt", "I J L O S Z T\n");
     std::string seqPath = "test_game_restart.txt";
     setupFile(seqPath, "I I J\n");
     std::stringstream ss;
@@ -90,10 +94,12 @@ TEST_CASE(Game_Restart_Resets_State) {
     g2.play();
     // Rendering should have happened at least once
     REQUIRE(dr.calls > 0);
+    removeFile("sequence1.txt");
 }
 
 // Lost terminates the loop
 TEST_CASE(Game_Lost_Terminates) {
+    setupFile("sequence1.txt", "I J L O S Z T\n");
     std::string seqPath = "test_game_lost.txt";
     // Enough drops to lose with a single I sequence
     setupFile(seqPath, "I\n");
@@ -107,5 +113,6 @@ TEST_CASE(Game_Lost_Terminates) {
     // If the game ended, players should be valid and level unchanged
     REQUIRE(g.getPlayer(1)->getLevelNum() == 0);
     removeFile(seqPath);
+    removeFile("sequence1.txt");
 }
 // Not working

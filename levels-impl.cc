@@ -8,6 +8,8 @@ import <iostream>;
 import <string>;
 import <utility>;
 import <memory>;
+import <stdexcept>;
+import <stdexcept>;
 
 const std::string DEFAULT_SOURCE_FILE = "sequence1.txt";
 
@@ -63,7 +65,7 @@ Level::Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
         // check if file exists when build for prod
 #ifndef TESTING
         if (!(*src)) {
-            throw "srcfile " + srcfile + " not exists.";
+            throw std::runtime_error("srcfile " + srcfile + " not exists.");
         }
 #endif
     } else {
@@ -86,7 +88,7 @@ void Level::setSrcfile(std::string srcfile) {
         // check if file exists when build for prod
 #ifndef TESTING
         if (!(*src)) {
-            throw "srcfile " + srcfile + " not exists.";
+            throw std::runtime_error("srcfile " + srcfile + " not exists.");
         }
 #endif
     }
