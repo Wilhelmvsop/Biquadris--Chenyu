@@ -13,6 +13,11 @@ export struct Debuff {
     bool blind;
     Block* force;
     std::pair<Block*, int> insert;
+
+    bool operator==(const Debuff& other) const;
+    // add up the debuff
+    Debuff operator+(const Debuff& other) const;
+    void operator+=(const Debuff& other);
 };
 
 export class LevelFactory {
@@ -22,12 +27,12 @@ export class LevelFactory {
     Level* createLevel(int levelNum = 0, unsigned int seed = 1,
                        std::string srcfile = "");
 
-    // Levelup returns the one level harder of `level` and delete it.
+    // Levelup returns the one level harder of `level` and delete the old one.
     // maintains the seed and srcfile, BUT, the randomness
     // behavior is set to default of the level
     Level* levelup(Level* level);
 
-    // Levelup returns the one level easier of `level` and delete it.
+    // Levelup returns the one level easier of `level` and delete the old one.
     // maintains the seed and srcfile, BUT, the randomness
     // behavior is set to default of the level
     Level* leveldown(Level* level);
@@ -46,20 +51,23 @@ class Level {
     std::istream* src;
     std::string srcfile;
 
-    void setRandom(bool random);
-    void setSrcfile(std::string srcfile);
-    void setSeed(unsigned int seed);
-
    public:
     Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
           Debuff debuff = Debuff{});
     virtual Block* getNextBlock() = 0;
 
-    int getLevelNum();
-    Debuff getDebuff();
-    bool getRandom();
-    unsigned int getSeed();
-    std::string getSrcfile();
+    // getters and setters:
+    int getLevelNum() const;
+    Debuff getDebuff() const;
+    bool getRandom() const;
+    unsigned int getSeed() const;
+    std::string getSrcfile() const;
+
+    void setRandom(bool random);
+    // set source file name and open it if need be (level 0 or norandom)
+    // in prod build, throw error message if file not exists
+    void setSrcfile(std::string srcfile);
+    void setSeed(unsigned int seed);
 
     virtual ~Level();
 

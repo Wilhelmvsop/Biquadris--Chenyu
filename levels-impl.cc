@@ -10,6 +10,43 @@ import <utility>;
 
 const std::string DEFAULT_SOURCE_FILE = "sequence1.txt";
 
+/////////////////////////// Debuff ///////////////////////////
+
+bool Debuff::operator==(const Debuff& other) const {
+    bool insertEq = false;
+    if (insert.first && other.insert.first) {
+        insertEq = insert.first->getChar() == other.insert.first->getChar();
+    } else if (!insert.first && !other.insert.first) {
+        insertEq = true;
+    } else {
+        insertEq = false;
+    }
+
+    bool forceEq = false;
+    if (force && other.force) {
+        forceEq = force->getChar() == other.force->getChar();
+    } else if (!force && !other.force) {
+        forceEq = true;
+    } else {
+        forceEq = false;
+    }
+
+    return (insertEq && insert.second == other.insert.second &&
+            heaviness == other.heaviness && blind == other.blind && forceEq);
+}
+
+// add up the debuff
+Debuff Debuff::operator+(const Debuff& other) const {
+    Debuff res{};
+    res.heaviness = heaviness + other.heaviness;
+    res.blind = blind || other.blind;
+    res.force = force ? force : other.force;
+    res.insert = insert.first ? insert : other.insert;
+    return res;
+}
+
+void Debuff::operator+=(const Debuff& other) { *this = (*this) + other; }
+
 /////////////////////////// Level ///////////////////////////
 
 Level::Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
@@ -22,23 +59,36 @@ Level::Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
       effect{debuff} {
     if (!random) {
         src = new std::ifstream{srcfile};
+        // check if file exists when build for prod
+#ifndef TESTING
+        if (!(*src)) {
+            throw "srcfile " + srcfile + " not exists.";
+        }
+#endif
     } else {
         std::srand(seed);
     }
 }
 
-int Level::getLevelNum() { return levelNum; }
-Debuff Level::getDebuff() { return effect; }
-bool Level::getRandom() { return random; }
-unsigned int Level::getSeed() { return seed; }
-std::string Level::getSrcfile() { return srcfile; }
+int Level::getLevelNum() const { return levelNum; }
+Debuff Level::getDebuff() const { return effect; }
+bool Level::getRandom() const { return random; }
+unsigned int Level::getSeed() const { return seed; }
+std::string Level::getSrcfile() const { return srcfile; }
 
 void Level::setRandom(bool random) { this->random = random; }
 void Level::setSrcfile(std::string srcfile) {
+    if (this->srcfile == srcfile) return;
     this->srcfile = srcfile;
     if (!random) {
         if (src) delete src;
         src = new std::ifstream{srcfile};
+        // check if file exists when build for prod
+#ifndef TESTING
+        if (!(*src)) {
+            throw "srcfile " + srcfile + " not exists.";
+        }
+#endif
     }
 }
 void Level::setSeed(unsigned int seed) { this->seed = seed; }
@@ -66,7 +116,7 @@ Block* Level::charToBlock(char c, int levelNum) {
 
 Level::~Level() {
     if (src) delete src;
-    // TODO: might have to delete the bomb pointer here
+    if (effect.insert.first) delete effect.insert.first;
 }
 
 /////////////////////////// L0 ///////////////////////////
