@@ -27,16 +27,6 @@ bool Board::updateCurrentBlock() noexcept {
 int Board::clear() noexcept {
      int clearedRows = 0;
      std::vector<int> rowsToClear;
-    
-     // get the row numbers thats filled
-     for (int row = 0; row < 18; row++) {
-          bool rowFilled = true;
-          for (int col = 0; col < 11; col++) {
-               if (canvas[row][col] == nullptr) {
-                    rowFilled = false;
-                    break;
-               }
-          }
 
     // get the row numbers thats filled
     for (int row = 0; row < 18; row++) {
@@ -266,10 +256,6 @@ using Canvas = std::shared_ptr<Block>[18][11];
 Canvas& Board::getCanvas() noexcept {
      return canvas;
 }
-void Board::setNextBlock(Block* newBlock) { nextBlock = newBlock; }
 
-using Canvas = Block* [18][11];
-Canvas& Board::getCanvas() { return canvas; }
-
-Block* Board::getNextBlock() const { return nextBlock; }
-Block* Board::getCurrentBlock() const { return currentBlock; }
+std::shared_ptr<Block> Board::getNextBlock() const { return nextBlock; }
+std::shared_ptr<Block> Board::getCurrentBlock() const { return currentBlock; }

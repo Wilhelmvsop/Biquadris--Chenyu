@@ -113,3 +113,32 @@ ZBlock::ZBlock(int level) noexcept
 TBlock::TBlock(int level) noexcept
     : Block{{{3, 1}, {2, 0}, {2, 1}, {2, 2}}, 'T', level} {}
 BombBlockCat::BombBlockCat(int level) noexcept : Block{{{3, 5}}, '*', level} {}
+
+std::shared_ptr<Block> BlockFactory::createBlock(char c, int level) const {
+    switch (c) {
+        case 'I':
+            return std::make_shared<IBlock>(level);
+        case 'J':
+            return std::make_shared<JBlock>(level);
+        case 'L':
+            return std::make_shared<LBlock>(level);
+        case 'O':
+            return std::make_shared<OBlock>(level);
+        case 'S':
+            return std::make_shared<SBlock>(level);
+        case 'Z':
+            return std::make_shared<ZBlock>(level);
+        case 'T':
+            return std::make_shared<TBlock>(level);
+        case '*':
+            return std::make_shared<BombBlockCat>(level);
+        default:
+            return nullptr;
+    }
+}
+
+bool BlockFactory::isValidChar(char c) const {
+    const std::string validChars = "IJLOSZT*";
+    return validChars.find(c) != std::string::npos;
+}
+

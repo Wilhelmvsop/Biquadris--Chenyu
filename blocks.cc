@@ -12,7 +12,7 @@ export class BlockFactory {
     // create block specify by character c
     // needs level for block creation
     // return nullptr if c invalid
-    Block* createBlock(char c, int level = 0) const;
+    std::shared_ptr<Block> createBlock(char c, int level = 0) const;
 };
 
 class Block {

@@ -37,4 +37,6 @@ export class Board {
      void setNextBlock(std::shared_ptr<Block> newBlock) noexcept;
      using Canvas = std::shared_ptr<Block>[18][11];
      Canvas& getCanvas() noexcept;
+     std::shared_ptr<Block> getNextBlock() const;
+     std::shared_ptr<Block> getCurrentBlock() const;
 };
