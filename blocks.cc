@@ -2,7 +2,19 @@ export module Blocks;
 import <vector>;
 import <utility>;
 
-export class Block {
+export class Block;
+
+export class BlockFactory {
+   public:
+    // check if char c is valid input for producing a block
+    bool isValidChar(char c) const;
+    // create block specify by character c
+    // needs level for block creation
+    // return nullptr if c invalid
+    Block* createBlock(char c, int level = 0) const;
+};
+
+class Block {
    protected:
     std::vector<std::pair<int, int>> coords;
     char ch;
@@ -13,6 +25,8 @@ export class Block {
     bool isCleared() const;
     void deleteCoords(std::pair<int, int> target);
     std::vector<std::pair<int, int>> getRotatedCoords(bool clockwise) const;
+    // clone returns new heap allocated pointer to exact same block of it
+    Block* clone() const;
 
     // getters and setters
     std::vector<std::pair<int, int>> getCoords() const;
