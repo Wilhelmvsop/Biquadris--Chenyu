@@ -186,5 +186,4 @@ help:
 	@echo "To add rendering tests: create test_render/test_<name>.cc files"
 	@echo "They will be automatically discovered and compiled"
 
-.PHONY: test_game
 
