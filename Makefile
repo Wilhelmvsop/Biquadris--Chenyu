@@ -105,7 +105,11 @@ $(MAIN_OBJECT): $(MAIN_SOURCE) $(MODULE_INTERFACE_OBJECTS) $(HEADERS_COMPILED) |
 
 # Build and run tests
 test: CXXFLAGS += -DTESTING
-test: $(TEST_EXEC)
+test:
+	@echo "Preparing test build (force recompile of modules with -DTESTING)..."
+	# Remove module objects so they are recompiled with -DTESTING
+	@rm -f $(MODULE_OBJECTS) $(MODULE_IMPL_OBJECTS) $(MODULE_INTERFACE_OBJECTS) $(TEST_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_MAIN_OBJECT)
+	@$(MAKE) $(TEST_EXEC)
 	@echo "Running tests..."
 	@./$(TEST_EXEC)
 
@@ -180,3 +184,6 @@ help:
 	@echo "To add tests: create tests/test_<module>.cc files"
 	@echo "To add rendering tests: create test_render/test_<name>.cc files"
 	@echo "They will be automatically discovered and compiled"
+
+.PHONY: test_game
+
