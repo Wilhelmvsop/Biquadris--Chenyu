@@ -113,7 +113,6 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
         bool curBlockFit = std::get<0>(dropResult);
         if (!curBlockFit) {
             res.status = PlayStatus::Lost;
-            return res;
         }
 
         // check special action
@@ -162,7 +161,6 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
             bool curBlockFit = std::get<0>(bombDropResult);
             if (!curBlockFit) {
                 res.status = PlayStatus::Lost;
-                return res;
             }
         }
 

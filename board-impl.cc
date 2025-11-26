@@ -199,7 +199,7 @@ void Board::down() noexcept {
     bool canMove = true;
     for (auto coord : coords) {
         int newRow = coord.first + 1;
-        if (newRow > 18 || canvas[newRow][coord.second] != nullptr) {
+        if (newRow > 17 || canvas[newRow][coord.second] != nullptr) {
             canMove = false;
             break;
         }
