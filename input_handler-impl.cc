@@ -2,20 +2,21 @@ module InputHandler;
 
 import <string>;
 import <vector>;
+import <memory>;
 
-InputHandler::InputHandler() : root(new Node()) {}
+InputHandler::InputHandler() : root(std::make_shared<Node>()) {}
 
-InputHandler::~InputHandler() { deleteSubtree(root); }
+InputHandler::~InputHandler() {}
 
 // Helper: update subtreeWords and representative along path s.
 // delta == 1 for insertion, -1 for removal. rep is the cmd to set on insertion.
 void InputHandler::changeCountsOnPath(const std::string &s, int delta, const std::string &rep)
 {
-    Node *node = root;
+    std::shared_ptr<Node> node = root;
     for (char c : s)
     {
         if (!node->children[c])
-            node->children[c] = new Node();
+            node->children[c] = std::make_shared<Node>();
         node = node->children[c];
         node->subtreeWords += delta;
         if (delta > 0)
@@ -42,7 +43,7 @@ void InputHandler::changeCountsOnPath(const std::string &s, int delta, const std
                     std::string rep;
                     for (size_t i = 0; i < node->children.size(); ++i)
                     {
-                        Node *ch = node->children[i];
+                        std::shared_ptr<Node> ch = node->children[i];
                         if (ch && ch->subtreeWords > 0)
                         {
                             rep = ch->representative;
@@ -62,11 +63,11 @@ void InputHandler::changeCountsOnPath(const std::string &s, int delta, const std
 
 void InputHandler::updateRepresentativeOnPath(const std::string &s, const std::string &rep)
 {
-    Node *node = root;
+    std::shared_ptr<Node> node = root;
     for (char c : s)
     {
         if (!node->children[c])
-            node->children[c] = new Node();
+            node->children[c] = std::make_shared<Node>();
         node = node->children[c];
         if (node->subtreeWords == 1)
             node->representative = rep;
@@ -77,11 +78,11 @@ bool InputHandler::registerAlias(const std::string &alias, const std::string &cm
 {
     if (alias.empty())
         return false;
-    Node *node = root;
+    std::shared_ptr<Node> node = root;
     for (char c : alias)
     {
         if (!node->children[c])
-            node->children[c] = new Node();
+            node->children[c] = std::make_shared<Node>();
         node = node->children[c];
     }
     if (node->isWord)
@@ -102,7 +103,7 @@ bool InputHandler::rename(const std::string &oldName, const std::string &newName
 {
     if (oldName.empty() || newName.empty())
         return false;
-    Node *oldNode = findNode(oldName);
+    std::shared_ptr<Node> oldNode = findNode(oldName);
     if (!oldNode || !oldNode->isWord)
         return false;
     std::string cmd = oldNode->cmd;
@@ -130,12 +131,12 @@ std::string InputHandler::resolve(const std::string &input)
         return std::string("INVALID_CMD");
 
     // Resolve the rest using existing trie logic
-    Node *n = findNode(rest);
+    std::shared_ptr<Node> n = findNode(rest);
     std::string resolved;
     if (n && n->isWord)
         resolved = n->cmd;
     else {
-        Node *node = n; // already found
+        std::shared_ptr<Node> node = n; // already found
         if (!node)
             return std::string("INVALID_CMD");
         if (node->subtreeWords == 1)
@@ -159,9 +160,9 @@ std::string InputHandler::resolve(const std::string &input)
     return resolved;
 }
 
-Node *InputHandler::findNode(const std::string &s)
+std::shared_ptr<Node> InputHandler::findNode(const std::string &s)
 {
-    Node *node = root;
+    std::shared_ptr<Node> node = root;
     for (char c : s)
     {
         if (!node->children[c])
@@ -171,14 +172,3 @@ Node *InputHandler::findNode(const std::string &s)
     return node;
 }
 
-void InputHandler::deleteSubtree(Node *n)
-{
-    if (!n)
-        return;
-    for (size_t i = 0; i < n->children.size(); ++i)
-    {
-        if (n->children[i])
-            deleteSubtree(n->children[i]);
-    }
-    delete n;
-}

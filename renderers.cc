@@ -6,6 +6,7 @@ export module Renderers;
 
 import Blocks;
 import <unordered_map>;
+import <memory>;
 
 export struct RenderPackage {
     int score;
@@ -13,7 +14,7 @@ export struct RenderPackage {
     // 18 x 11 array, use pointer instead to not copy everything
     const char (*pixels)[11];
     int level;
-    Block* nextBlock;
+    std::shared_ptr<Block> nextBlock;
     bool lost;
 };
 

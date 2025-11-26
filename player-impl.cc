@@ -8,38 +8,36 @@ import <iostream>;
 import <string>;
 import <tuple>;
 import <utility>;
+import <memory>;
 
-Player::Player(Level* level, std::istream* input)
+Player::Player(std::shared_ptr<Level> level, std::shared_ptr<std::istream> input)
     : level{level},
-      board{new Board()},
+      board{std::make_shared<Board>()},
       debuffs{level->getDebuff()},
       initLevel{level->getLevelNum()},
       numBlocksPlaced{0},
       score{0},
       highscore{0},
       input{input} {
-    Block* firstBlock = level->getNextBlock();
+    std::shared_ptr<Block> firstBlock = level->getNextBlock();
     board->setCurrentBlock(firstBlock);
-    Block* nextBlock = level->getNextBlock();
+    std::shared_ptr<Block> nextBlock = level->getNextBlock();
     board->setNextBlock(nextBlock);
 }
 
-Player::~Player() {
-    delete level;
-    delete board;
-}
+Player::~Player() {}
 
-Block* Player::getCurrentBlock() const { return board->getCurrentBlock(); }
-Block* Player::getNextBlock() const { return board->getNextBlock(); }
+std::shared_ptr<Block> Player::getCurrentBlock() const { return board->getCurrentBlock(); }
+std::shared_ptr<Block> Player::getNextBlock() const { return board->getNextBlock(); }
 int Player::getScore() const { return score; }
 int Player::getHighscore() const { return highscore; }
 int Player::getLevelNum() const { return level->getLevelNum(); }
 
-const char (*Player::getPixels(const Debuff& debuff) const)[11] {
+std::vector<std::vector<char>> Player::getPixels(const Debuff& debuff) const {
     // add up the current debuff with permanent debuff
-    Debuff curDebuff = debuff + debuffs;
-    Board::Canvas& canvas = board->getCanvas();
-    char (*res)[11] = new char[18][11];
+    Debuff curDebuff = debuff + this->debuffs;
+    Board::Canvas& canvas = this->board->getCanvas();
+    std::vector<std::vector<char>> res(18, std::vector<char>(11, ' '));
     for (int row = 0; row < 18; ++row) {
         for (int col = 0; col < 11; ++col) {
             if (curDebuff.blind && row >= 2 && row <= 11 && col >= 2 &&
@@ -55,8 +53,7 @@ const char (*Player::getPixels(const Debuff& debuff) const)[11] {
     return res;
 }
 
-void Player::setInput(std::istream* newInput) {
-    if (input != newInput) delete input;
+void Player::setInput(std::shared_ptr<std::istream> newInput) {
     input = newInput;
 }
 
@@ -66,12 +63,11 @@ int Player::calculateRowScore(int numRowsCleared) const {
 }
 
 int Player::calculateBlockScore(
-    const std::vector<Block*>& blocksCleared) const {
+    const std::vector<std::shared_ptr<Block>>& blocksCleared) const {
     int res = 0;
     for (auto blockp : blocksCleared) {
         int base = (blockp->getMotherLevel() + 1);
         res += (base * base);
-        delete blockp;
     }
     return res;
 }
@@ -117,7 +113,6 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
         bool curBlockFit = std::get<0>(dropResult);
         if (!curBlockFit) {
             res.status = PlayStatus::Lost;
-            return res;
         }
 
         // check special action
@@ -138,7 +133,7 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
                     char forcedBlock;
                     BlockFactory bf;
                     (*input) >> forcedBlock;
-                    Block* forcedBlockPtr =
+                    std::shared_ptr<Block> forcedBlockPtr =
                         bf.createBlock(forcedBlock, level->getLevelNum());
                     res.debuff.force = forcedBlockPtr;
                     break;
@@ -152,11 +147,11 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
 
         // deal with debuff.insert
         ++numBlocksPlaced;
-        Block* insertedBlock = debuff.insert.first;
+        std::shared_ptr<Block> insertedBlock = debuff.insert.first;
         int whenToInsert = debuff.insert.second;
         if (insertedBlock && (numBlocksPlaced % whenToInsert == 0)) {
-            Block* currentBlock = board->getCurrentBlock();
-            Block* clonedCurrentBlock = currentBlock->clone();
+            std::shared_ptr<Block> currentBlock = board->getCurrentBlock();
+            std::shared_ptr<Block> clonedCurrentBlock = currentBlock->clone();
             // this will delete currentBlock, so we need to clone it before hand
             board->setCurrentBlock(insertedBlock->clone());
             board->setNextBlock(clonedCurrentBlock);
@@ -166,7 +161,6 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
             bool curBlockFit = std::get<0>(bombDropResult);
             if (!curBlockFit) {
                 res.status = PlayStatus::Lost;
-                return res;
             }
         }
 
@@ -206,15 +200,13 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
         LevelFactory lf{};
         unsigned int seed = level->getSeed();
         std::string srcfile = level->getSrcfile();
-        delete level;
         level = lf.createLevel(initLevel, seed, srcfile);
 
         // reset board
-        delete board;
-        board = new Board{};
-        Block* firstBlock = level->getNextBlock();
+        board = std::make_shared<Board>();
+        std::shared_ptr<Block> firstBlock = level->getNextBlock();
         board->setCurrentBlock(firstBlock);
-        Block* nextBlock = level->getNextBlock();
+        std::shared_ptr<Block> nextBlock = level->getNextBlock();
         board->setNextBlock(nextBlock);
 
         // reset debuff
