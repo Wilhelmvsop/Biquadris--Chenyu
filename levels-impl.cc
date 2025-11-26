@@ -7,6 +7,7 @@ import <fstream>;
 import <iostream>;
 import <string>;
 import <utility>;
+import <memory>;
 
 const std::string DEFAULT_SOURCE_FILE = "sequence1.txt";
 
@@ -58,7 +59,7 @@ Level::Level(int levelNum, bool random, std::string srcfile, unsigned int seed,
       seed{seed},
       effect{debuff} {
     if (!random) {
-        src = new std::ifstream{srcfile};
+        src = std::make_shared<std::fstream>(srcfile);
         // check if file exists when build for prod
 #ifndef TESTING
         if (!(*src)) {
@@ -81,8 +82,7 @@ void Level::setSrcfile(std::string srcfile) {
     if (this->srcfile == srcfile) return;
     this->srcfile = srcfile;
     if (!random) {
-        if (src) delete src;
-        src = new std::ifstream{srcfile};
+        src = std::make_shared<std::fstream>(srcfile);
         // check if file exists when build for prod
 #ifndef TESTING
         if (!(*src)) {
@@ -93,37 +93,34 @@ void Level::setSrcfile(std::string srcfile) {
 }
 void Level::setSeed(unsigned int seed) { this->seed = seed; }
 
-Block* Level::charToBlock(char c, int levelNum) {
+std::shared_ptr<Block> Level::charToBlock(char c, int levelNum) {
     switch (c) {
         case 'I':
-            return new IBlock(levelNum);
+            return std::make_shared<IBlock>(levelNum);
         case 'J':
-            return new JBlock(levelNum);
+            return std::make_shared<JBlock>(levelNum);
         case 'L':
-            return new LBlock(levelNum);
+            return std::make_shared<LBlock>(levelNum);
         case 'O':
-            return new OBlock(levelNum);
+            return std::make_shared<OBlock>(levelNum);
         case 'S':
-            return new SBlock(levelNum);
+            return std::make_shared<SBlock>(levelNum);
         case 'Z':
-            return new ZBlock(levelNum);
+            return std::make_shared<ZBlock>(levelNum);
         case 'T':
-            return new TBlock(levelNum);
+            return std::make_shared<TBlock>(levelNum);
         default:
             return nullptr;
     }
 }
 
-Level::~Level() {
-    if (src) delete src;
-    if (effect.insert.first) delete effect.insert.first;
-}
+Level::~Level() {}
 
 /////////////////////////// L0 ///////////////////////////
 
 Level0::Level0(std::string srcfile) : Level{0, false, srcfile, 1} {}
 
-Block* Level0::getNextBlock() {
+std::shared_ptr<Block> Level0::getNextBlock() {
     char nextBlockChar;
     (*src) >> nextBlockChar;
 
@@ -140,22 +137,22 @@ Block* Level0::getNextBlock() {
 
 Level1::Level1(unsigned int seed) : Level{1, true, DEFAULT_SOURCE_FILE, seed} {}
 
-Block* Level1::getNextBlock() {
+std::shared_ptr<Block> Level1::getNextBlock() {
     int rand = std::rand() % 12;
     if (rand == 0) {
-        return new SBlock(getLevelNum());
+        return std::make_shared<SBlock>(getLevelNum());
     } else if (rand <= 1) {
-        return new ZBlock(getLevelNum());
+        return std::make_shared<ZBlock>(getLevelNum());
     } else if (rand <= 3) {
-        return new LBlock(getLevelNum());
+        return std::make_shared<LBlock>(getLevelNum());
     } else if (rand <= 5) {
-        return new OBlock(getLevelNum());
+        return std::make_shared<OBlock>(getLevelNum());
     } else if (rand <= 7) {
-        return new TBlock(getLevelNum());
+        return std::make_shared<TBlock>(getLevelNum());
     } else if (rand <= 9) {
-        return new JBlock(getLevelNum());
+        return std::make_shared<JBlock>(getLevelNum());
     } else {
-        return new IBlock(getLevelNum());
+        return std::make_shared<IBlock>(getLevelNum());
     }
 }
 
@@ -163,22 +160,22 @@ Block* Level1::getNextBlock() {
 
 Level2::Level2(unsigned int seed) : Level{2, true, DEFAULT_SOURCE_FILE, seed} {}
 
-Block* Level2::getNextBlock() {
+std::shared_ptr<Block> Level2::getNextBlock() {
     int rand = std::rand() % 7;
     if (rand == 0) {
-        return new SBlock(getLevelNum());
+        return std::make_shared<SBlock>(getLevelNum());
     } else if (rand == 1) {
-        return new ZBlock(getLevelNum());
+        return std::make_shared<ZBlock>(getLevelNum());
     } else if (rand == 2) {
-        return new LBlock(getLevelNum());
+        return std::make_shared<LBlock>(getLevelNum());
     } else if (rand == 3) {
-        return new OBlock(getLevelNum());
+        return std::make_shared<OBlock>(getLevelNum());
     } else if (rand == 4) {
-        return new TBlock(getLevelNum());
+        return std::make_shared<TBlock>(getLevelNum());
     } else if (rand == 5) {
-        return new JBlock(getLevelNum());
+        return std::make_shared<JBlock>(getLevelNum());
     } else {
-        return new IBlock(getLevelNum());
+        return std::make_shared<IBlock>(getLevelNum());
     }
 }
 
@@ -188,27 +185,27 @@ Level3::Level3(unsigned int seed)
     : Level{3, true, DEFAULT_SOURCE_FILE, seed, Debuff{1, false, nullptr, {}}} {
 }
 
-Block* Level3::randomNextBlock() {
+std::shared_ptr<Block> Level3::randomNextBlock() {
     int rand = std::rand() % 9;
     if (rand <= 1) {
-        return new SBlock(getLevelNum());
+        return std::make_shared<SBlock>(getLevelNum());
     } else if (rand <= 3) {
-        return new ZBlock(getLevelNum());
+        return std::make_shared<ZBlock>(getLevelNum());
     } else if (rand == 4) {
-        return new LBlock(getLevelNum());
+        return std::make_shared<LBlock>(getLevelNum());
     } else if (rand == 5) {
-        return new OBlock(getLevelNum());
+        return std::make_shared<OBlock>(getLevelNum());
     } else if (rand == 6) {
-        return new TBlock(getLevelNum());
+        return std::make_shared<TBlock>(getLevelNum());
     } else if (rand == 7) {
-        return new JBlock(getLevelNum());
+        return std::make_shared<JBlock>(getLevelNum());
     } else {
-        return new IBlock(getLevelNum());
+        return std::make_shared<IBlock>(getLevelNum());
     }
 }
 
 // requires: src must be valid and open
-Block* Level3::getNextBlockFromSrc() {
+std::shared_ptr<Block> Level3::getNextBlockFromSrc() {
     char nextBlockChar;
     (*src) >> nextBlockChar;
 
@@ -221,7 +218,7 @@ Block* Level3::getNextBlockFromSrc() {
     return charToBlock(nextBlockChar, getLevelNum());
 }
 
-Block* Level3::getNextBlock() {
+std::shared_ptr<Block> Level3::getNextBlock() {
     if (random) {
         return randomNextBlock();
     } else {
@@ -233,29 +230,29 @@ Block* Level3::getNextBlock() {
 
 Level4::Level4(unsigned int seed)
     : Level{4, true, DEFAULT_SOURCE_FILE, seed,
-            Debuff{1, false, nullptr, {new BombBlockCat{getLevelNum()}, 5}}} {}
+            Debuff{1, false, nullptr, std::make_pair(std::make_shared<BombBlockCat>(getLevelNum()), 5)}} {}
 
-Block* Level4::randomNextBlock() {
+std::shared_ptr<Block> Level4::randomNextBlock() {
     int rand = std::rand() % 9;
     if (rand <= 1) {
-        return new SBlock(getLevelNum());
+        return std::make_shared<SBlock>(getLevelNum());
     } else if (rand <= 3) {
-        return new ZBlock(getLevelNum());
+        return std::make_shared<ZBlock>(getLevelNum());
     } else if (rand == 4) {
-        return new LBlock(getLevelNum());
+        return std::make_shared<LBlock>(getLevelNum());
     } else if (rand == 5) {
-        return new OBlock(getLevelNum());
+        return std::make_shared<OBlock>(getLevelNum());
     } else if (rand == 6) {
-        return new TBlock(getLevelNum());
+        return std::make_shared<TBlock>(getLevelNum());
     } else if (rand == 7) {
-        return new JBlock(getLevelNum());
+        return std::make_shared<JBlock>(getLevelNum());
     } else {
-        return new IBlock(getLevelNum());
+        return std::make_shared<IBlock>(getLevelNum());
     }
 }
 
 // requires: src must be valid and open
-Block* Level4::getNextBlockFromSrc() {
+std::shared_ptr<Block> Level4::getNextBlockFromSrc() {
     char nextBlockChar;
     (*src) >> nextBlockChar;
 
@@ -268,7 +265,7 @@ Block* Level4::getNextBlockFromSrc() {
     return charToBlock(nextBlockChar, getLevelNum());
 }
 
-Block* Level4::getNextBlock() {
+std::shared_ptr<Block> Level4::getNextBlock() {
     if (random) {
         return randomNextBlock();
     } else {
@@ -277,28 +274,28 @@ Block* Level4::getNextBlock() {
 }
 
 /////////////////////////// LevelFactory ///////////////////////////
-Level* LevelFactory::createLevel(int levelNum, unsigned int seed,
+std::shared_ptr<Level> LevelFactory::createLevel(int levelNum, unsigned int seed,
                                  std::string srcfile) {
-    Level* res;
+    std::shared_ptr<Level> res;
     switch (levelNum) {
         case 0:
-            res = new Level0(srcfile);
+            res = std::make_shared<Level0>(srcfile);
             res->setSeed(seed);
             return res;
         case 1:
-            res = new Level1(seed);
+            res = std::make_shared<Level1>(seed);
             res->setSrcfile(srcfile);
             return res;
         case 2:
-            res = new Level2(seed);
+            res = std::make_shared<Level2>(seed);
             res->setSrcfile(srcfile);
             return res;
         case 3:
-            res = new Level3(seed);
+            res = std::make_shared<Level3>(seed);
             res->setSrcfile(srcfile);
             return res;
         case 4:
-            res = new Level4(seed);
+            res = std::make_shared<Level4>(seed);
             res->setSrcfile(srcfile);
             return res;
         default:
@@ -306,28 +303,24 @@ Level* LevelFactory::createLevel(int levelNum, unsigned int seed,
     }
 }
 
-Level* LevelFactory::levelup(Level* level) {
+std::shared_ptr<Level> LevelFactory::levelup(std::shared_ptr<Level> level) {
     int levelNum = level->getLevelNum();
     if (levelNum == 4) return level;
 
     unsigned int seed = level->getSeed();
     std::string srcfile = level->getSrcfile();
     bool random = level->getRandom();
-    delete level;
 
-    Level* newLevel = createLevel(levelNum + 1, seed, srcfile);
-    return newLevel;
+    return createLevel(levelNum + 1, seed, srcfile);
 }
 
-Level* LevelFactory::leveldown(Level* level) {
+std::shared_ptr<Level> LevelFactory::leveldown(std::shared_ptr<Level> level) {
     int levelNum = level->getLevelNum();
     if (levelNum == 0) return level;
 
     unsigned int seed = level->getSeed();
     std::string srcfile = level->getSrcfile();
     bool random = level->getRandom();
-    delete level;
 
-    Level* newLevel = createLevel(levelNum - 1, seed, srcfile);
-    return newLevel;
+    return createLevel(levelNum - 1, seed, srcfile);
 }

@@ -1,6 +1,7 @@
 export module Blocks;
 import <vector>;
 import <utility>;
+import <memory>;
 
 export class Block;
 
@@ -21,58 +22,58 @@ class Block {
     int motherLevel;
 
    public:
-    Block(std::vector<std::pair<int, int>> coords, char ch, int level);
-    bool isCleared() const;
+    Block(std::vector<std::pair<int, int>> coords, char ch, int level) noexcept;
+    bool isCleared() const noexcept;
     void deleteCoords(std::pair<int, int> target);
-    std::vector<std::pair<int, int>> getRotatedCoords(bool clockwise) const;
     // clone returns new heap allocated pointer to exact same block of it
-    Block* clone() const;
+    std::shared_ptr<Block> clone() const;
+    std::vector<std::pair<int, int>> getRotatedCoords(bool clockwise) const noexcept;
 
     // getters and setters
-    std::vector<std::pair<int, int>> getCoords() const;
-    char getChar() const;
-    int getMotherLevel() const;
-    void setCoords(std::vector<std::pair<int, int>> coords);
+    std::vector<std::pair<int, int>> getCoords() const noexcept;
+    char getChar() const noexcept;
+    int getMotherLevel() const noexcept;
+    void setCoords(std::vector<std::pair<int, int>> coords) noexcept;
 
-    virtual ~Block() = 0;
+    virtual ~Block() noexcept = 0;
 };
 
 export class IBlock : public Block {
    public:
-    IBlock(int level);
+    IBlock(int level) noexcept;
 };
 
 export class JBlock : public Block {
    public:
-    JBlock(int level);
+    JBlock(int level) noexcept;
 };
 
 export class LBlock : public Block {
    public:
-    LBlock(int level);
+    LBlock(int level) noexcept;
 };
 
 export class OBlock : public Block {
    public:
-    OBlock(int level);
+    OBlock(int level) noexcept;
 };
 
 export class SBlock : public Block {
    public:
-    SBlock(int level);
+    SBlock(int level) noexcept;
 };
 
 export class TBlock : public Block {
    public:
-    TBlock(int level);
+    TBlock(int level) noexcept;
 };
 
 export class ZBlock : public Block {
    public:
-    ZBlock(int level);
+    ZBlock(int level) noexcept;
 };
 
 export class BombBlockCat : public Block {
    public:
-    BombBlockCat(int level);
+    BombBlockCat(int level) noexcept;
 };
