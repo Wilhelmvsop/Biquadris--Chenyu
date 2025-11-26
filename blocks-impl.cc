@@ -7,11 +7,11 @@ import <stdexcept>;
 import <string>;
 
 // BLOCK IMPLEMENTATIONS
-Block::Block(std::vector<std::pair<int, int>> coords, char ch, int level)
+Block::Block(std::vector<std::pair<int, int>> coords, char ch, int level) noexcept
     : coords{coords}, ch{ch}, motherLevel{level} {}
-Block::~Block() {}
+Block::~Block() noexcept {}
 
-bool Block::isCleared() const { return coords.empty(); }
+bool Block::isCleared() const noexcept { return coords.empty(); }
 
 // Assume target coords are in the vector, throws exception if it is not
 void Block::deleteCoords(std::pair<int, int> target) {
@@ -29,17 +29,19 @@ void Block::deleteCoords(std::pair<int, int> target) {
     }
 }
 
-std::vector<std::pair<int, int>> Block::getCoords() const { return coords; }
+std::vector<std::pair<int, int>> Block::getCoords() const noexcept {
+    return coords;
+}
 
-char Block::getChar() const { return ch; }
+char Block::getChar() const noexcept { return ch; }
 
-int Block::getMotherLevel() const { return motherLevel; }
+int Block::getMotherLevel() const noexcept { return motherLevel; }
 
-void Block::setCoords(std::vector<std::pair<int, int>> coords) {
+void Block::setCoords(std::vector<std::pair<int, int>> coords) noexcept {
     this->coords = coords;
 }
 
-std::vector<std::pair<int, int>> Block::getRotatedCoords(bool clockwise) const {
+std::vector<std::pair<int, int>> Block::getRotatedCoords(bool clockwise) const noexcept {
     int min_y = coords[0].first;
     int max_y = coords[0].first;
     int min_x = coords[0].second;
@@ -90,46 +92,46 @@ std::vector<std::pair<int, int>> Block::getRotatedCoords(bool clockwise) const {
     return rotatedCoords;
 }
 
-Block* Block::clone() const {
+std::shared_ptr<Block> Block::clone() const {
     BlockFactory bf{};
     return bf.createBlock(ch, motherLevel);
 }
 
 // SUBCLASS CONSTRUCTORS
-IBlock::IBlock(int level)
+IBlock::IBlock(int level) noexcept
     : Block{{{3, 0}, {3, 1}, {3, 2}, {3, 3}}, 'I', level} {}
-JBlock::JBlock(int level)
+JBlock::JBlock(int level) noexcept
     : Block{{{3, 0}, {3, 1}, {3, 2}, {2, 0}}, 'J', level} {}
-LBlock::LBlock(int level)
+LBlock::LBlock(int level) noexcept
     : Block{{{3, 0}, {3, 1}, {3, 2}, {2, 2}}, 'L', level} {}
-OBlock::OBlock(int level)
+OBlock::OBlock(int level) noexcept
     : Block{{{3, 0}, {3, 1}, {2, 0}, {2, 1}}, 'O', level} {}
-SBlock::SBlock(int level)
+SBlock::SBlock(int level) noexcept
     : Block{{{3, 0}, {3, 1}, {2, 1}, {2, 2}}, 'S', level} {}
-ZBlock::ZBlock(int level)
+ZBlock::ZBlock(int level) noexcept
     : Block{{{3, 1}, {3, 2}, {2, 0}, {2, 1}}, 'Z', level} {}
-TBlock::TBlock(int level)
+TBlock::TBlock(int level) noexcept
     : Block{{{3, 1}, {2, 0}, {2, 1}, {2, 2}}, 'T', level} {}
-BombBlockCat::BombBlockCat(int level) : Block{{{3, 5}}, '*', level} {}
+BombBlockCat::BombBlockCat(int level) noexcept : Block{{{3, 5}}, '*', level} {}
 
-Block* BlockFactory::createBlock(char c, int level) const {
+std::shared_ptr<Block> BlockFactory::createBlock(char c, int level) const {
     switch (c) {
         case 'I':
-            return new IBlock(level);
+            return std::make_shared<IBlock>(level);
         case 'J':
-            return new JBlock(level);
+            return std::make_shared<JBlock>(level);
         case 'L':
-            return new LBlock(level);
+            return std::make_shared<LBlock>(level);
         case 'O':
-            return new OBlock(level);
+            return std::make_shared<OBlock>(level);
         case 'S':
-            return new SBlock(level);
+            return std::make_shared<SBlock>(level);
         case 'Z':
-            return new ZBlock(level);
+            return std::make_shared<ZBlock>(level);
         case 'T':
-            return new TBlock(level);
+            return std::make_shared<TBlock>(level);
         case '*':
-            return new BombBlockCat(level);
+            return std::make_shared<BombBlockCat>(level);
         default:
             return nullptr;
     }
@@ -139,3 +141,4 @@ bool BlockFactory::isValidChar(char c) const {
     const std::string validChars = "IJLOSZT*";
     return validChars.find(c) != std::string::npos;
 }
+

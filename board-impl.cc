@@ -5,39 +5,28 @@ import <iostream>;
 import <vector>;
 import <utility>;
 import <tuple>;
+import <memory>;
 
-Board::Board() {}
-Board::~Board() {
-    if (currentBlock != nullptr) {
-        delete currentBlock;
-    }
-    if (nextBlock != nullptr) {
-        delete nextBlock;
-    }
+Board::Board() noexcept {}
+Board::~Board() noexcept {}
 
-    for (auto block : blocks) {
-        delete block;
-    }
+bool Board::updateCurrentBlock() noexcept {
+     currentBlock = std::move(nextBlock);
+
+     bool fits = true;
+     std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
+     for (auto coord : coords) {
+          if (canvas[coord.first][coord.second] != nullptr) {
+               fits = false;
+          }
+          canvas[coord.first][coord.second] = currentBlock;
+     }
+     return fits;
 }
 
-bool Board::updateCurrentBlock() {
-    currentBlock = nextBlock;
-    nextBlock = nullptr;
-    bool fits = true;
-    std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
-
-    for (auto coord : coords) {
-        if (canvas[coord.first][coord.second] != nullptr) {
-            fits = false;
-        }
-        canvas[coord.first][coord.second] = currentBlock;
-    }
-    return fits;
-}
-
-int Board::clear() {
-    int clearedRows = 0;
-    std::vector<int> rowsToClear;
+int Board::clear() noexcept {
+     int clearedRows = 0;
+     std::vector<int> rowsToClear;
 
     // get the row numbers thats filled
     for (int row = 0; row < 18; row++) {
@@ -85,8 +74,8 @@ int Board::clear() {
     return clearedRows;
 }
 
-std::vector<Block*> Board::refreshBlocks() {
-    std::vector<Block*> clearedBlocks;
+std::vector<std::shared_ptr<Block>> Board::refreshBlocks() noexcept {
+     std::vector<std::shared_ptr<Block>> clearedBlocks;
 
     auto it = blocks.begin();
     while (it != blocks.end()) {
@@ -101,8 +90,8 @@ std::vector<Block*> Board::refreshBlocks() {
     return clearedBlocks;
 }
 
-void Board::left() {
-    std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
+void Board::left() noexcept {
+     std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
 
     for (auto coord : coords) {
         canvas[coord.first][coord.second] = nullptr;
@@ -135,8 +124,8 @@ void Board::left() {
     }
 }
 
-void Board::right() {
-    std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
+void Board::right() noexcept {
+     std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
 
     for (auto coord : coords) {
         canvas[coord.first][coord.second] = nullptr;
@@ -169,8 +158,8 @@ void Board::right() {
     }
 }
 
-void Board::rotate(bool clockwise) {
-    std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
+void Board::rotate(bool clockwise) noexcept {
+     std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
 
     for (auto coord : coords) {
         canvas[coord.first][coord.second] = nullptr;
@@ -200,8 +189,8 @@ void Board::rotate(bool clockwise) {
     }
 }
 
-void Board::down() {
-    std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
+void Board::down() noexcept {
+     std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
 
     for (auto coord : coords) {
         canvas[coord.first][coord.second] = nullptr;
@@ -210,7 +199,7 @@ void Board::down() {
     bool canMove = true;
     for (auto coord : coords) {
         int newRow = coord.first + 1;
-        if (newRow > 18 || canvas[newRow][coord.second] != nullptr) {
+        if (newRow > 17 || canvas[newRow][coord.second] != nullptr) {
             canMove = false;
             break;
         }
@@ -233,47 +222,40 @@ void Board::down() {
     }
 }
 
-std::tuple<bool, int, std::vector<Block*>> Board::drop() {
-    while (true) {
-        std::vector<std::pair<int, int>> currentCoords =
-            currentBlock->getCoords();
-        down();
+std::tuple<bool, int, std::vector<std::shared_ptr<Block>>> Board::drop() noexcept {
+     while (true) {
+          std::vector<std::pair<int, int>> currentCoords = currentBlock->getCoords();
+          down();
 
         if (currentBlock->getCoords() == currentCoords) {
             break;
         }
     }
 
-    blocks.emplace_back(currentBlock);
-    currentBlock = nullptr;
+     blocks.emplace_back(std::move(currentBlock));
 
-    int rowsCleared = clear();
-    std::vector<Block*> clearedBlocks = refreshBlocks();
-    bool continueGame = updateCurrentBlock();
-    return std::make_tuple(continueGame, rowsCleared, clearedBlocks);
+     int rowsCleared = clear();
+     std::vector<std::shared_ptr<Block>> clearedBlocks = refreshBlocks();
+     bool continueGame = updateCurrentBlock();
+     return std::make_tuple(continueGame, rowsCleared, clearedBlocks);
 }
 
-void Board::setCurrentBlock(Block* newBlock) {
-    // if exists, remove currentBlock's pixels from canvas and free it
-    if (currentBlock) {
-        std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
-        for (auto coord : coords) {
-            canvas[coord.first][coord.second] = nullptr;
-        }
-        delete currentBlock;
-    }
-
-    currentBlock = newBlock;
-
-    std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
-    for (auto coord : coords) {
-        canvas[coord.first][coord.second] = currentBlock;
-    }
+void Board::setCurrentBlock(std::shared_ptr<Block> newBlock) noexcept {
+     currentBlock = newBlock;
+     
+     std::vector<std::pair<int, int>> coords = currentBlock->getCoords();
+     for (auto coord : coords) {
+          canvas[coord.first][coord.second] = currentBlock;
+     }
 }
-void Board::setNextBlock(Block* newBlock) { nextBlock = newBlock; }
+void Board::setNextBlock(std::shared_ptr<Block> newBlock) noexcept {
+     nextBlock = newBlock;
+}
 
-using Canvas = Block* [18][11];
-Canvas& Board::getCanvas() { return canvas; }
+using Canvas = std::shared_ptr<Block>[18][11];
+Canvas& Board::getCanvas() noexcept {
+     return canvas;
+}
 
-Block* Board::getNextBlock() const { return nextBlock; }
-Block* Board::getCurrentBlock() const { return currentBlock; }
+std::shared_ptr<Block> Board::getNextBlock() const { return nextBlock; }
+std::shared_ptr<Block> Board::getCurrentBlock() const { return currentBlock; }

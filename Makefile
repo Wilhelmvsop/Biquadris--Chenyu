@@ -11,8 +11,8 @@ OBJ_DIR = objects
 # GOON0: ONLY EDIT THIS SECTION TO ADD NEW STANDARD LIBRARY
 ##################################################################
 SYSTEM_HEADERS = iostream utility algorithm vector functional cstdlib \
-				 fstream filesystem map unordered_map stdexcept tuple \
-				 climits string 
+				 fstream filesystem map memory unordered_map stdexcept \
+				 tuple climits string 
 
 ##################################################################
 
@@ -91,6 +91,7 @@ $(OBJ_DIR)/%.o: %.cc $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/blocks-impl.o: blocks-impl.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/levels.o: levels.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/levels-impl.o: levels-impl.cc $(OBJ_DIR)/levels.o $(HEADERS_COMPILED) | $(OBJ_DIR)
+$(OBJ_DIR)/board.o: board.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/board-impl.o: board-impl.cc $(OBJ_DIR)/board.o $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/renderers.o: renderers.cc $(OBJ_DIR)/blocks.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/renderers-impl.o: renderers-impl.cc $(OBJ_DIR)/renderers.o $(HEADERS_COMPILED) | $(OBJ_DIR)

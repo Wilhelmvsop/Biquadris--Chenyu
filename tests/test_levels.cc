@@ -6,6 +6,7 @@ import <fstream>;
 import <filesystem>;
 import <map>;
 import <string>;
+import <memory>;
 
 #include "test_runner.h"
 
@@ -13,14 +14,12 @@ TEST_CASE(LevelFactory_LevelCreation) {
     LevelFactory factory;
 
     for (unsigned int i = 0; i < 5; ++i) {
-        Level* lvi = factory.createLevel(i, i, "factory_test.txt");
+        std::shared_ptr<Level> lvi = factory.createLevel(i, i, "factory_test.txt");
 
         REQUIRE(lvi->getLevelNum() == i);
         REQUIRE(lvi->getSeed() == i);
         REQUIRE(lvi->getSrcfile() == "factory_test.txt");
         REQUIRE(lvi->getRandom() == i > 0);
-
-        delete lvi;
     }
 }
 
@@ -29,7 +28,7 @@ TEST_CASE(LevelFactory_Levelup) {
     const unsigned int expectedSeed = 1;
     const std::string expectedSrcfile = "factory_test2.txt";
 
-    Level* lv = nullptr;
+    std::shared_ptr<Level> lv = nullptr;
     int i = 0;
     for (; i < 5; ++i) {
         if (!lv) {
@@ -54,7 +53,7 @@ TEST_CASE(LevelFactory_Leveldown) {
     const unsigned int expectedSeed = 2;
     const std::string expectedSrcfile = "factory_test3.txt";
 
-    Level* lv = nullptr;
+    std::shared_ptr<Level> lv = nullptr;
     int i = 4;
     for (; i >= 0; --i) {
         if (!lv) {
@@ -83,19 +82,16 @@ TEST_CASE(Level0_BlockGeneration) {
     testFile.close();
 
     LevelFactory factory;
-    Level* lv0 = factory.createLevel(0, 0, testFilePath);
+    std::shared_ptr<Level> lv0 = factory.createLevel(0, 0, testFilePath);
 
     for (auto c : testContent) {
         if (c == ' ') continue;
         char expected = c;
-        Block* block = lv0->getNextBlock();
+        std::shared_ptr<Block> block = lv0->getNextBlock();
         char actual = block->getChar();
         REQUIRE(expected == actual);
-
-        delete block;
     }
 
-    delete lv0;
     std::filesystem::remove(testFilePath);
 }
 
@@ -108,42 +104,36 @@ TEST_CASE(Level0_BlockGeneration_SrcCirculation) {
     testFile.close();
 
     LevelFactory factory;
-    Level* lv0 = factory.createLevel(0, 0, testFilePath);
+    std::shared_ptr<Level> lv0 = factory.createLevel(0, 0, testFilePath);
 
     for (char c : testContent) {
         if (c == ' ') continue;
         char expected = c;
-        Block* block = lv0->getNextBlock();
+        std::shared_ptr<Block> block = lv0->getNextBlock();
         char actual = block->getChar();
         REQUIRE(expected == actual);
-
-        delete block;
     }
 
     // check if it goes back at the beginning of file
     for (char c : testContent) {
         if (c == ' ') continue;
         char expected = c;
-        Block* block = lv0->getNextBlock();
+        std::shared_ptr<Block> block = lv0->getNextBlock();
         char actual = block->getChar();
         REQUIRE(expected == actual);
-
-        delete block;
     }
 
-    delete lv0;
     std::filesystem::remove(testFilePath);
 }
 
-void test_distribution(Level* level, int ratio_S, int ratio_Z, int ratio_I,
+void test_distribution(std::shared_ptr<Level> level, int ratio_S, int ratio_Z, int ratio_I,
                        int ratio_J, int ratio_L, int ratio_O, int ratio_T,
                        int num_samples) {
     std::map<char, int> counts;
 
     for (int i = 0; i < num_samples; i++) {
-        Block* block = level->getNextBlock();
+        std::shared_ptr<Block> block = level->getNextBlock();
         counts[block->getChar()]++;
-        delete block;
     }
 
     // Calculate total ratio and expected counts
@@ -173,29 +163,25 @@ void test_distribution(Level* level, int ratio_S, int ratio_Z, int ratio_I,
 }
 
 TEST_CASE(Level1_distribution) {
-    Level1* lv1 = new Level1(42);
+    std::shared_ptr<Level1> lv1 = std::make_shared<Level1>(42);
     // Level1: S=1/12, Z=1/12, rest=2/12 each
     test_distribution(lv1, 1, 1, 2, 2, 2, 2, 2, 15000);
-    delete lv1;
 }
 
 TEST_CASE(Level2_distribution) {
-    Level2* lv2 = new Level2(42);
+    std::shared_ptr<Level2> lv2 = std::make_shared<Level2>(42);
     // Level2: all equal
     test_distribution(lv2, 1, 1, 1, 1, 1, 1, 1, 15000);
-    delete lv2;
 }
 
 TEST_CASE(Level3_distribution) {
-    Level3* lv3 = new Level3(42);
+    std::shared_ptr<Level3> lv3 = std::make_shared<Level3>(42);
     // Level3: S=2/9, Z=2/9, rest=1/9 each
     test_distribution(lv3, 2, 2, 1, 1, 1, 1, 1, 15000);
-    delete lv3;
 }
 
 TEST_CASE(Level4_distribution) {
-    Level4* lv4 = new Level4(42);
+    std::shared_ptr<Level4> lv4 = std::make_shared<Level4>(42);
     // Level4: same as Level3
     test_distribution(lv4, 2, 2, 1, 1, 1, 1, 1, 15000);
-    delete lv4;
 }

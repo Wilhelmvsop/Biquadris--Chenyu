@@ -7,6 +7,7 @@ import <fstream>;
 import <filesystem>;
 import <iostream>;
 import <utility>;
+import <memory>;
 
 #include "test_runner.h"
 
@@ -28,7 +29,7 @@ TEST_CASE(Player_PlayMove) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{};
     auto res = Zibo.play("right", d);
     PlayResult expect{PlayStatus::Continue, {0, false, nullptr, {nullptr, 1}}};
@@ -50,7 +51,7 @@ TEST_CASE(Player_PlayLeft) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{};
     Zibo.play("right", d);
     auto res = Zibo.play("left", d);
@@ -73,7 +74,7 @@ TEST_CASE(Player_PlayDown) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{};
     auto res = Zibo.play("down", d);
     PlayResult expect{PlayStatus::Continue, {0, false, nullptr, {nullptr, 1}}};
@@ -95,7 +96,7 @@ TEST_CASE(Player_PlayRotation) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{};
 
     // test clockwise
@@ -130,7 +131,7 @@ TEST_CASE(Player_PlayDrop) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{};
 
     // drop first I
@@ -197,8 +198,7 @@ TEST_CASE(Player_PlayDrop_SpecialAction_Blind) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    std::istringstream userInput{"blind heavy force J"};
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &userInput};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istringstream>("blind heavy force J")};
     Debuff d{};
 
     // should end up like this before clear:
@@ -230,8 +230,7 @@ TEST_CASE(Player_PlayDrop_SpecialAction_Heavy) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    std::istringstream userInput{"heavy force J"};
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &userInput};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istringstream>("heavy force J")};
     Debuff d{};
 
     // should end up like this before clear:
@@ -264,8 +263,7 @@ TEST_CASE(Player_PlayDrop_SpecialAction_Force) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    std::istringstream userInput{"force J blind heavy"};
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &userInput};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istringstream>("force J blind heavy")};
     Debuff d{};
 
     // should end up like this before clear:
@@ -286,11 +284,10 @@ TEST_CASE(Player_PlayDrop_SpecialAction_Force) {
     for (int i = 0; i < 10; ++i) Zibo.play("right", d);
     PlayResult res = Zibo.play("drop", d);
     BlockFactory bf{};
-    Block* expectedForcedBlock = bf.createBlock('J', 0);
+    std::shared_ptr<Block> expectedForcedBlock = bf.createBlock('J', 0);
     PlayResult expectForce{PlayStatus::Endturn,
                            {0, false, bf.createBlock('J', 0), {nullptr, 1}}};
     REQUIRE(expectForce == res);
-    delete expectedForcedBlock;
 
     removeSeqFile(testFilePath);
 }
@@ -301,7 +298,7 @@ TEST_CASE(Player_PlayDrop_Lost) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{};
 
     for (int i = 0; i < 14; i++) Zibo.play("drop", d);
@@ -317,7 +314,7 @@ TEST_CASE(Player_PlayDrop_Debuffed_Heavy) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff heavy{1, false, nullptr, {nullptr, 1}};
 
     // should be down by one after right
@@ -347,7 +344,7 @@ TEST_CASE(Player_PlayDrop_Debuffed_Force) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     BlockFactory bf;
     Debuff forceL{0, false, bf.createBlock('L', 0), {nullptr, 1}};
 
@@ -365,7 +362,7 @@ TEST_CASE(Player_PlayLevelChange) {
 
     LevelFactory lf;
     int initLevel = 0;
-    Player Zibo{lf.createLevel(initLevel, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(initLevel, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{0, false, nullptr, {nullptr, 1}};
 
     Zibo.play("levelup", d);
@@ -396,7 +393,7 @@ TEST_CASE(Player_PlayNoRandom) {
 
     LevelFactory lf;
     int initLevel = 3;  // should work on level 3 or 4
-    Player Zibo{lf.createLevel(initLevel, 67, "fakeFilepath.txt"), &std::cin};
+    Player Zibo{lf.createLevel(initLevel, 67, "fakeFilepath.txt"), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{0, false, nullptr, {nullptr, 1}};
 
     Zibo.play("norandom", d, testFilePath);
@@ -431,7 +428,7 @@ TEST_CASE(Player_PlayRandom) {
 
     LevelFactory lf;
     int initLevel = 3;  // should work on level 3 or 4
-    Player Zibo{lf.createLevel(initLevel, 67, "fakeFilepath.txt"), &std::cin};
+    Player Zibo{lf.createLevel(initLevel, 67, "fakeFilepath.txt"), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{0, false, nullptr, {nullptr, 1}};
 
     Zibo.play("norandom", d, testFilePath);
@@ -476,7 +473,7 @@ TEST_CASE(Player_PlayChar) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{};
 
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'I');
@@ -495,7 +492,7 @@ TEST_CASE(Player_PlayRestart) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(0, 67, testFilePath), &std::cin};
+    Player Zibo{lf.createLevel(0, 67, testFilePath), std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{};
 
     // [          J  ]
@@ -530,7 +527,7 @@ TEST_CASE(Player_Level4) {
     setupSeqFile(testFilePath, testContent);
 
     LevelFactory lf;
-    Player Zibo{lf.createLevel(4, 67, "fakeFilePath.txt"), &std::cin};
+    Player Zibo{lf.createLevel(4, 67, "fakeFilePath.txt"), std::make_shared<std::istream>(std::cin.rdbuf())};
     BlockFactory bf;
     Debuff d{0, false, nullptr, {nullptr, 1}};
 
