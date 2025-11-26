@@ -11,7 +11,7 @@ export struct RenderPackage {
     int score;
     int highscore;
     // 18 x 11 array, use pointer instead to not copy everything
-    char (*pixels)[11];
+    const char (*pixels)[11];
     int level;
     Block* nextBlock;
     bool lost;
@@ -52,12 +52,4 @@ export class GuiRenderer : public Renderer {
     GuiRenderer();
     ~GuiRenderer() override;
     void render(const RenderPackage& p1, const RenderPackage& p2) override;
-};
-
-// Text-based (terminal) renderer
-export class TuiRenderer : public Renderer {
-  public:
-     TuiRenderer() = default;
-     ~TuiRenderer() override = default;
-     void render(const RenderPackage &p1, const RenderPackage &p2) override;
 };

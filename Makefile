@@ -10,8 +10,8 @@ OBJ_DIR = objects
 ##################################################################
 # GOON0: ONLY EDIT THIS SECTION TO ADD NEW STANDARD LIBRARY
 ##################################################################
-SYSTEM_HEADERS = iostream utility algorithm vector functional cstdlib \
-				 fstream filesystem map unordered_map stdexcept tuple \
+SYSTEM_HEADERS = iostream utility algorithm vector  functional cstdlib \
+				 fstream filesystem sstream map unordered_map stdexcept tuple \
 				 climits string 
 
 ##################################################################
@@ -24,10 +24,10 @@ MAIN_SOURCE = main.cc
 # GOON1: ONLY EDIT THIS SECTION TO ADD NEW MODULES
 ##################################################################
 # List your module interface files here (in dependency order)
-MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc board.cc renderers.cc player.cc
+MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc board.cc renderers.cc player.cc game.cc
 
 # List your module implementation files here (same order as interfaces)
-MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc board-impl.cc renderers-impl.cc player-impl.cc
+MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc board-impl.cc renderers-impl.cc player-impl.cc game-impl.cc
 #################################################################
 
 # Automatically generate object file names from source files (in objects/ dir)
