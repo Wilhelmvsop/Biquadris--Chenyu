@@ -25,11 +25,9 @@ MAIN_SOURCE = main.cc
 ##################################################################
 # List your module interface files here (in dependency order)
 MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc board.cc renderers.cc player.cc game.cc
-# MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc board.cc renderers.cc player.cc 
 
 # List your module implementation files here (same order as interfaces)
 MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc board-impl.cc renderers-impl.cc player-impl.cc game-impl.cc
-# MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc board-impl.cc renderers-impl.cc player-impl.cc 
 #################################################################
 
 # Automatically generate object file names from source files (in objects/ dir)

@@ -43,6 +43,20 @@ void Game::parseFirstWord(const std::string& line, std::string& first,
     iss >> extra;
 }
 
+void Game::say(const std::string& msg) const noexcept {
+#ifndef TESTING
+    std::cout << msg << std::endl;
+#endif
+}
+
+std::istream& Game::prompt(std::istream& in, std::string& response,
+                           const std::string& msg) {
+#ifndef TESTING
+    std::cout << msg;
+#endif
+    return getline(in, response);
+}
+
 void Game::processCmd(const std::string& rawFirst, const std::string& extra,
                       Player& cur, Player& other, std::istream& curInput,
                       int& whoLost) {
@@ -57,27 +71,23 @@ void Game::processCmd(const std::string& rawFirst, const std::string& extra,
     std::string cmd = (i > 0) ? rawFirst.substr(i) : rawFirst;
     std::string resolved = inputHandler->resolve(cmd);
     if (resolved == "INVALID_CMD" || resolved.empty()) {
-#ifndef TESTING
-        std::cout << "Invalid command, try again: ";
-#endif
-        return;  // skip invalid or empty commands safely
+        throw std::runtime_error("Invalid command, try again.");
+    }
+
+    // special command for gracefully exits
+    if (resolved == "quit") {
+        exit(0);
     }
 
     // If non-multipliable commands, play once and return
     if (resolved == "sequence") {
         if (extra.empty()) {
-#ifndef TESTING
-            std::cout << "sequence: please provide the file name.";
-#endif
-            return;  // nothing to do
+            throw std::runtime_error("sequence: please provide the file name.");
         }
 
         auto fs = std::make_shared<std::ifstream>(extra);
         if (!fs->is_open()) {
-#ifndef TESTING
-            std::cout << "file " << extra << " doesn't exists.";
-#endif
-            return;
+            throw std::runtime_error("file " + extra + "  doesn't exists.");
         }  // file not found
 
         input = fs;
@@ -99,10 +109,7 @@ void Game::processCmd(const std::string& rawFirst, const std::string& extra,
 
     if (resolved == "norandom") {
         if (extra.empty()) {
-#ifndef TESTING
-            std::cout << "norandom: please provide file name";
-#endif
-            return;
+            throw std::runtime_error("norandom: please provide file name.");
         }
         cur.play("norandom", extra);
         return;
@@ -147,26 +154,34 @@ static RenderPackage buildPackage(std::shared_ptr<Player> p) {
     pkg.score = p->getScore();
     pkg.highscore = p->getHighscore();
     pkg.level = p->getLevelNum();
-    // getPixels now returns vector<vector<char>>, convert to char(*)[11]
     pkg.pixels = p->getPixels();
     pkg.nextBlock = p->getNextBlock();
     pkg.lost = false;
     return pkg;
 }
 
+void Game::render(int whoLost) {
+    RenderPackage pkg1 = buildPackage(p1);
+    RenderPackage pkg2 = buildPackage(p2);
+    if (whoLost) {
+        RenderPackage& lostPkg = (whoLost == 1) ? pkg1 : pkg2;
+        lostPkg.lost = true;
+    }
+    for (auto r : renderers) {
+        r->render(pkg1, pkg2);
+    }
+}
+
 void Game::play() {
     if (!p1 || !p2) return;
 
     std::string line;
-    // main loop
-    while (std::getline(*input, line)) {
-        // render both players
-        RenderPackage pkg1 = buildPackage(p1);
-        RenderPackage pkg2 = buildPackage(p2);
-        for (auto r : renderers) {
-            r->render(pkg1, pkg2);
-        }
 
+    // render first frame
+    render();
+
+    // main loop
+    while (prompt(*input, line, turnCount % 2 == 1 ? "p1: " : "p2: ")) {
         // first word: something like "3rig"
         // extra word: for some command e.g. sequence "seq.txt"
         std::string first, extra;
@@ -177,22 +192,17 @@ void Game::play() {
         try {
             processCmd(first, extra, cur, other, *input, whoLost);
             if (whoLost) {
-                // render final status
-                RenderPackage f1 = buildPackage(p1);
-                RenderPackage f2 = buildPackage(p2);
-                RenderPackage& lostPkg = (whoLost == 1) ? f1 : f2;
-                lostPkg.lost = true;
-                for (auto& r : renderers) {
-                    r->render(f1, f2);
-                }
+                render(whoLost);
                 break;
             }
-        } catch (std::runtime_error err) {
-#ifndef TESTING
-            // ignore invalid command; continue
-            std::cerr << err.what() << std::endl;
-#endif
+        } catch (const std::runtime_error& err) {
+            // not gonna render if there is error
+            // (so that user can see message instead of big screen)
+            say(err.what());
+            continue;
         }
+
+        render();
     }
 }
 // helper access for test

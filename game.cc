@@ -6,6 +6,7 @@ import Levels;
 import Player;
 
 import <algorithm>;
+import <cstdlib>;
 import <fstream>;
 import <iostream>;
 import <memory>;
@@ -49,6 +50,16 @@ export class Game {
     void istreamDeleter(std::istream* is) {
         if (is != &std::cin) delete is;
     }
+    // say something to console, only works with prod build
+    void say(const std::string& msg) const noexcept;
+
+    // say something and get input from user
+    // return whether getting input succeed
+    std::istream& prompt(std::istream& in, std::string& response,
+                         const std::string& msg);
+
+    // render 1 frame of the game. Take optional loser (1 or 2)
+    void render(int whoLost = 0);
 
    public:
     // Game(std::istream* in = &std::cin, InputHandler* ih = nullptr);

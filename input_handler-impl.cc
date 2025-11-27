@@ -21,6 +21,7 @@ void InputHandler::useDefaultAliases() {
         {"random", "random"},
         {"sequence", "sequence"},
         {"restart", "restart"},
+        {"quit", "quit"},  // for gracefully exit
         {"I", "I"},
         {"J", "J"},
         {"L", "L"},
