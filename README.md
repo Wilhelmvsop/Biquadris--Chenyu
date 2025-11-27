@@ -13,8 +13,9 @@
 7. Work on Game impl file together (Nov 24)
 8. Write report (Nov 25-28)
 
-NOTES:
+## NOTES:
 - For block coordinates, set (r, c) (0, 0) as the 15th row first column, number increases downward and to the right
+- For GUI renderers impl, everytime you `XFlush()`, I recommend `usleep()` for like 1ms (`usleep(1000)`)
 ---
 
 ## Style Guide:
@@ -63,3 +64,4 @@ TESTCASE(TestCaseName) {
 }
 ```
 4. Now you can do `make test`. That's it
+

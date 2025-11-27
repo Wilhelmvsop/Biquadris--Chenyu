@@ -1,6 +1,7 @@
 module;
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 module Renderers;
 
@@ -14,9 +15,9 @@ import <stdexcept>;
 
 const int GUI_WINDOW_X = 100;
 const int GUI_WINDOW_Y = 100;
-const unsigned int GUI_WINDOW_WIDTH = 700;
+const unsigned int GUI_WINDOW_WIDTH = 800;
 const unsigned int GUI_WINDOW_BORDER_WIDTH = 10;
-// split line width = 2% of window width
+// split line width = 1% of window width
 const unsigned int GUI_SPLIT_LINE_PERCENT = 1;
 // margin-X width = 1% of window width
 const unsigned int GUI_MARGIN_X_PERCENT = 1;
@@ -55,6 +56,19 @@ GuiRenderer::GuiRenderer() {
     XMapWindow(display, window);
 
     XFlush(display);
+    XFlush(display);
+
+    // Make window non-resizeable (stolen from demo)
+    XSizeHints hints;
+    hints.flags = (USPosition | PSize | PMinSize | PMaxSize);
+    hints.height = hints.base_height = hints.min_height = hints.max_height =
+        GUI_WINDOW_HEIGHT;
+    hints.width = hints.base_width = hints.min_width = hints.max_width =
+        GUI_WINDOW_WIDTH;
+    XSetNormalHints(display, window, &hints);
+
+    XSynchronize(display, True);
+    usleep(10000);
 }
 
 GuiRenderer::~GuiRenderer() {
@@ -62,12 +76,14 @@ GuiRenderer::~GuiRenderer() {
     XCloseDisplay(display);
 }
 
+// TODO: want to ignore the split line
 void GuiRenderer::clearWindow() {
     XSetForeground(display, gc, WhitePixel(display, screen));
     XFillRectangle(display, window, gc, 0, 0, GUI_WINDOW_WIDTH,
                    GUI_WINDOW_HEIGHT);
 
     XFlush(display);
+    usleep(1000);
 }
 
 void GuiRenderer::renderSplitLine() {
@@ -81,6 +97,7 @@ void GuiRenderer::renderSplitLine() {
     XFillRectangle(display, window, gc, x, y, width, height);
 
     XFlush(display);
+    usleep(1000);
 }
 
 void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
@@ -111,9 +128,13 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
                 highscoreMsg.length());
 
     // draw top part's end line:
-    XDrawLine(display, window, gc, x, y + 10, x + GUI_PLAYER_WINDOW_WIDTH,
-              y + 10);
+    int xBorder =
+        left ? 0 : x - ((2 * GUI_WINDOW_WIDTH * GUI_MARGIN_X_PERCENT) / 100);
+    XDrawLine(display, window, gc, xBorder, y + 10,
+              xBorder + (GUI_WINDOW_WIDTH / 2), y + 10);
+
     XFlush(display);
+    usleep(1000);
 
     // render board:
     for (int row = 0; row < 18; ++row, y += GUI_CELL_WIDTH) {
@@ -133,9 +154,13 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
         }
     }
     XFlush(display);
+    usleep(1000);
 
     // render bottom part:
     XSetForeground(display, gc, BlackPixel(display, screen));
+    // bottom part top line:
+    XDrawLine(display, window, gc, xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2),
+              y);
     y += GUI_CELL_WIDTH;
     XDrawString(display, window, gc, x, y, nextMsg.c_str(), nextMsg.length());
 
@@ -166,6 +191,7 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
     }
 
     XFlush(display);
+    usleep(1000);
 }
 
 void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
@@ -173,6 +199,9 @@ void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
     renderHalf(p1, true);
     renderSplitLine();
     renderHalf(p2, false);
+
+    XFlush(display);
+    usleep(1000);
 }
 
 void TuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
