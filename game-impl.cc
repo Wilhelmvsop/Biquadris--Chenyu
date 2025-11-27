@@ -196,4 +196,4 @@ void Game::play() {
     }
 }
 // helper access for test
-std::shared_ptr<Player> Game::getPlayer(int idx) { return idx == 1 ? p1 : p2; }
+std::shared_ptr<Player>& Game::getPlayer(int idx) { return idx == 1 ? p1 : p2; }

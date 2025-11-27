@@ -12,6 +12,7 @@ import <memory>;
 import <sstream>;
 import <stdexcept>;
 import <vector>;
+import <string>;
 
 export struct GameSettings {
     // renderers
@@ -57,5 +58,5 @@ export class Game {
     // NOTE: for "sequence file" command, each command must end with \n
     void play();
     // helper accessor for test
-    std::shared_ptr<Player> getPlayer(int idx);
+    std::shared_ptr<Player>& getPlayer(int idx);
 };

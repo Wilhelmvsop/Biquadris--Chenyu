@@ -3,10 +3,13 @@
 import Blocks;
 import Renderers;
 
+import <vector>;
+import <memory>;
+
 int main() {
-    LBlock lblock{1};
-    ZBlock zblock{2};
-    char pixels1[18][11] = {
+    auto lblock = std::make_shared<LBlock>(1);
+    auto zblock = std::make_shared<ZBlock>(2);
+    std::vector<std::vector<char>> pixels1{
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
         {'T', 'T', 'T', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
@@ -17,7 +20,7 @@ int main() {
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-        {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+        {' ', ' ', ' ', ' ', ' ', '*', ' ', ' ', ' ', ' ', ' '},
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'S', ' ', ' '},
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', 'Z', 'S', 'S', ' '},
@@ -27,7 +30,7 @@ int main() {
         {'I', 'I', 'I', 'I', 'O', 'O', 'J', 'J', 'I', ' ', ' '},
     };
 
-    char pixels2[18][11] = {
+    std::vector<std::vector<char>> pixels2{
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
         {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
@@ -48,8 +51,8 @@ int main() {
         {'O', 'O', 'J', 'J', ' ', 'T', 'I', 'I', 'I', 'I', ' '},
     };
 
-    RenderPackage p1{100, 120, pixels1, 1, &lblock, false};
-    RenderPackage p2{140, 200, pixels2, 2, &zblock, false};
+    RenderPackage p1{100, 120, pixels1, 1, lblock, false};
+    RenderPackage p2{140, 200, pixels2, 2, zblock, false};
 
     GuiRenderer gui{};
     usleep(100000);  // wait 100ms for window is ready

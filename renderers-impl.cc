@@ -122,8 +122,13 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
             char c = pkg.pixels[row][col];
             if (c == ' ') continue;
             unsigned long color = colorMap.at(c);
+            // fill color
             XSetForeground(display, gc, color);
             XFillRectangle(display, window, gc, xAlias, y, GUI_CELL_WIDTH,
+                           GUI_CELL_WIDTH);
+            // outline
+            XSetForeground(display, gc, BlackPixel(display, screen));
+            XDrawRectangle(display, window, gc, xAlias, y, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
         }
     }
@@ -138,18 +143,24 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
         const std::vector<std::pair<int, int>> coords =
             pkg.nextBlock->getCoords();
         const unsigned long color = colorMap.at(pkg.nextBlock->getChar());
-        XSetForeground(display, gc, color);
 
-        // offset 5 cells: (xCoord,yCoord) -> (xCoord + 5, yCoord + 3)
+        // offset to kinda make it at the middle
         // (so that (0, 0) coord can be at the middle bottom)
-        const int xOffset = 5;
-        const int yOffset = 3;
+        const int xOffset = 3;
+        const int yOffset = -2;
 
         // block use (row, col) coord, so it's (y, x)
         for (auto& [yCoord, xCoord] : coords) {
             int xAlias = x + ((xCoord + xOffset) * GUI_CELL_WIDTH);
             int yAlias = y + ((yCoord + yOffset) * GUI_CELL_WIDTH);
+            // color
+            XSetForeground(display, gc, color);
             XFillRectangle(display, window, gc, xAlias, yAlias, GUI_CELL_WIDTH,
+                           GUI_CELL_WIDTH);
+
+            // outline
+            XSetForeground(display, gc, BlackPixel(display, screen));
+            XDrawRectangle(display, window, gc, xAlias, yAlias, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
         }
     }

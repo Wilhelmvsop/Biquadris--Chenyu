@@ -4,6 +4,7 @@ import InputHandler;
 import <iostream>;
 import <string>;
 import <vector>;
+import <memory>;
 
 int main(int argc, char* argv[]) {
     bool tuiOnly = false;
@@ -51,6 +52,6 @@ int main(int argc, char* argv[]) {
     }
 
     Game game{{tuiOnly, seed, scriptfile1, scriptfile2, startLevel,
-               make_shared<Inputhandler>()}};
+               std::make_shared<Inputhandler>()}};
     game.play();
 }
