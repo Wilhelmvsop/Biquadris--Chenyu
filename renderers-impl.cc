@@ -334,5 +334,10 @@ void TuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
             i < rightNext.size() ? rightNext[i] : std::string(13, ' ');
         std::cout << L << "  " << R << '\n';
     }
-    std::cout << '\n';
+
+    std::cout << std::endl;
+
+    // deal with lost player
+    if (p1.lost) std::cout << "Player1 Lost!" << std::endl;
+    if (p2.lost) std::cout << "Player2 Lost!" << std::endl;
 }

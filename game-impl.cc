@@ -193,7 +193,7 @@ void Game::play() {
             processCmd(first, extra, cur, other, *input, whoLost);
             if (whoLost) {
                 render(whoLost);
-                break;
+                return;
             }
         } catch (const std::runtime_error& err) {
             // not gonna render if there is error
