@@ -34,8 +34,8 @@ const unsigned int GUI_PLAYER_WINDOW_WIDTH =
 const unsigned int GUI_CELL_WIDTH = GUI_PLAYER_WINDOW_WIDTH / 11;
 
 // height that we can use to draw for one player
-// top = 3 cells, board = 18 cells, bottom = 5 cells
-const unsigned int GUI_PLAYER_WINDOW_HEIGHT = 26 * GUI_CELL_WIDTH;
+// top = 4 cells, board = 18 cells, bottom = 5 cells
+const unsigned int GUI_PLAYER_WINDOW_HEIGHT = 27 * GUI_CELL_WIDTH;
 const unsigned int GUI_WINDOW_HEIGHT =
     (GUI_PLAYER_WINDOW_HEIGHT * 100) / (100 - (2 * GUI_MARGIN_Y_PERCENT));
 
@@ -45,6 +45,8 @@ const std::string GUI_BIG_FONT_QUERY =
     "-*-helvetica-bold-r-*-*-48-*-*-*-*-*-*-*";
 const std::string GUI_NORMAL_FONT_QUERY =
     "-*-helvetica-medium-r-*-*-16-*-*-*-*-*-*-*";
+// "-*-dejavu sans-medium-r-*-*-14-*-*-*-*-*-*-*";
+// "-*-liberation sans-medium-r-*-*-14-*-*-*-*-*-*-*";
 
 GuiRenderer::GuiRenderer() {
     display = XOpenDisplay(NULL);
@@ -153,15 +155,29 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
                 highscoreMsg.length());
 
     // draw top part's end line:
+    y += GUI_CELL_WIDTH;
     int xBorder =
         left ? 0 : x - ((2 * GUI_WINDOW_WIDTH * GUI_MARGIN_X_PERCENT) / 100);
-    XDrawLine(display, window, gc, xBorder, y + 10,
-              xBorder + (GUI_WINDOW_WIDTH / 2), y + 10);
+    XDrawLine(display, window, gc, xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2),
+              y);
 
     XFlush(display);
     usleep(1000);
 
-    // render board:
+    y += GUI_CELL_WIDTH;
+    // render board outline:
+    int xGrid = x;
+    for (int colLine = 0; colLine < 12; ++colLine, xGrid += GUI_CELL_WIDTH) {
+        XDrawLine(display, window, gc, xGrid, y, xGrid,
+                  y + (18 * GUI_CELL_WIDTH));
+    }
+    int yGrid = y;
+    for (int rowLine = 0; rowLine < 19; ++rowLine, yGrid += GUI_CELL_WIDTH) {
+        XDrawLine(display, window, gc, x, yGrid, x + (11 * GUI_CELL_WIDTH),
+                  yGrid);
+    }
+
+    // render blocks:
     for (int row = 0; row < 18; ++row, y += GUI_CELL_WIDTH) {
         int xAlias = x;
         for (int col = 0; col < 11; ++col, xAlias += GUI_CELL_WIDTH) {
