@@ -34,14 +34,15 @@ export class Renderer {
 // *: brown
 export class GuiRenderer : public Renderer {
     inline static const std::unordered_map<char, unsigned long> colorMap = {
-        {'I', 0x00F0F0},  // Cyan
-        {'J', 0x0000F0},  // Blue
-        {'L', 0xF0A000},  // Orange
-        {'O', 0xF0F000},  // Yellow
-        {'S', 0x00F000},  // Green
-        {'Z', 0xF00000},  // Red
-        {'T', 0xA000F0},  // Purple
-        {'*', 0x8B4513}};
+        {'I', 0x00E5E5},  // Cyan
+        {'J', 0x4169E1},  // Blue
+        {'L', 0xFF8C00},  // Orange
+        {'O', 0xFFD700},  // Gold
+        {'S', 0x32CD32},  // Green
+        {'Z', 0xFF3333},  // Red
+        {'T', 0x9370DB},  // Purple
+        {'*', 0xD2691E},  // brown
+    };
 
     Display* display;
     Window window;

@@ -18,7 +18,7 @@ const int GUI_WINDOW_Y = 100;
 const unsigned int GUI_WINDOW_WIDTH = 800;
 const unsigned int GUI_WINDOW_BORDER_WIDTH = 10;
 // split line width = 1% of window width
-const unsigned int GUI_SPLIT_LINE_PERCENT = 1;
+const unsigned int GUI_SPLIT_LINE_PERCENT = 0;
 // margin-X width = 1% of window width
 const unsigned int GUI_MARGIN_X_PERCENT = 1;
 // margin-Y width = 1% of window height
@@ -49,7 +49,7 @@ GuiRenderer::GuiRenderer() {
     window = XCreateSimpleWindow(
         display, RootWindow(display, screen), GUI_WINDOW_Y, GUI_WINDOW_X,
         GUI_WINDOW_WIDTH, GUI_WINDOW_HEIGHT, GUI_WINDOW_BORDER_WIDTH,
-        BlackPixel(display, screen), WhitePixel(display, screen));
+        WhitePixel(display, screen), BlackPixel(display, screen));
     XStoreName(display, window, GUI_WINDOW_NAME.c_str());
     gc = XCreateGC(display, window, 0, NULL);
 
@@ -78,7 +78,7 @@ GuiRenderer::~GuiRenderer() {
 
 // TODO: want to ignore the split line
 void GuiRenderer::clearWindow() {
-    XSetForeground(display, gc, WhitePixel(display, screen));
+    XSetForeground(display, gc, BlackPixel(display, screen));
     XFillRectangle(display, window, gc, 0, 0, GUI_WINDOW_WIDTH,
                    GUI_WINDOW_HEIGHT);
 
@@ -90,11 +90,16 @@ void GuiRenderer::renderSplitLine() {
     int x = GUI_PLAYER_WINDOW_WIDTH +
             ((GUI_WINDOW_WIDTH * GUI_MARGIN_X_PERCENT) / 100);
     int y = 0;
-    unsigned int width = ((GUI_WINDOW_WIDTH * GUI_SPLIT_LINE_PERCENT) / 100);
-    unsigned int height = GUI_WINDOW_HEIGHT;
 
-    XSetForeground(display, gc, BlackPixel(display, screen));
-    XFillRectangle(display, window, gc, x, y, width, height);
+    XSetForeground(display, gc, WhitePixel(display, screen));
+    if (GUI_SPLIT_LINE_PERCENT > 0) {
+        unsigned int width =
+            ((GUI_WINDOW_WIDTH * GUI_SPLIT_LINE_PERCENT) / 100);
+        unsigned int height = GUI_WINDOW_HEIGHT;
+        XFillRectangle(display, window, gc, x, y, width, height);
+    } else {
+        XDrawLine(display, window, gc, x, y, x, y + GUI_WINDOW_HEIGHT);
+    }
 
     XFlush(display);
     usleep(1000);
@@ -118,7 +123,7 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
     }
 
     // render top part;
-    XSetForeground(display, gc, BlackPixel(display, screen));
+    XSetForeground(display, gc, WhitePixel(display, screen));
     y += GUI_CELL_WIDTH;
     XDrawString(display, window, gc, x, y, levelMsg.c_str(), levelMsg.length());
     y += GUI_CELL_WIDTH;
@@ -148,7 +153,7 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
             XFillRectangle(display, window, gc, xAlias, y, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
             // outline
-            XSetForeground(display, gc, BlackPixel(display, screen));
+            XSetForeground(display, gc, WhitePixel(display, screen));
             XDrawRectangle(display, window, gc, xAlias, y, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
         }
@@ -157,7 +162,7 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
     usleep(1000);
 
     // render bottom part:
-    XSetForeground(display, gc, BlackPixel(display, screen));
+    XSetForeground(display, gc, WhitePixel(display, screen));
     // bottom part top line:
     XDrawLine(display, window, gc, xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2),
               y);
@@ -184,7 +189,7 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
                            GUI_CELL_WIDTH);
 
             // outline
-            XSetForeground(display, gc, BlackPixel(display, screen));
+            XSetForeground(display, gc, WhitePixel(display, screen));
             XDrawRectangle(display, window, gc, xAlias, yAlias, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
         }
