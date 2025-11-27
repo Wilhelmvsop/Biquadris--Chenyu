@@ -24,14 +24,6 @@ export class Renderer {
     virtual ~Renderer() = default;
 };
 
-// I: blue
-// J: dark blue
-// L: orange
-// O: yellow
-// S: lemon
-// Z: red
-// T: purple
-// *: brown
 export class GuiRenderer : public Renderer {
     inline static const std::unordered_map<char, unsigned long> colorMap = {
         {'I', 0x00E5E5},  // Cyan
@@ -48,6 +40,8 @@ export class GuiRenderer : public Renderer {
     Window window;
     int screen;
     GC gc;
+    XFontStruct* bigFont;
+    XFontStruct* normalFont;
 
     void clearWindow();
     void renderSplitLine();

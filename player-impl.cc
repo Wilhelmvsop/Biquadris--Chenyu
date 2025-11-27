@@ -73,6 +73,7 @@ void Player::setInput(std::shared_ptr<std::istream> newInput) {
 }
 
 int Player::calculateRowScore(int numRowsCleared) const {
+    if (!numRowsCleared) return 0;
     int base = level->getLevelNum() + numRowsCleared;
     return base * base;
 }

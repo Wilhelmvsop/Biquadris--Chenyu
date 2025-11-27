@@ -51,7 +51,7 @@ int main() {
         {'O', 'O', 'J', 'J', ' ', 'T', 'I', 'I', 'I', 'I', ' '},
     };
 
-    RenderPackage p1{100, 120, pixels1, 1, lblock, false};
+    RenderPackage p1{100, 120, pixels1, 1, lblock, true};
     RenderPackage p2{140, 200, pixels2, 2, zblock, false};
 
     GuiRenderer gui{};

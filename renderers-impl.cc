@@ -41,6 +41,11 @@ const unsigned int GUI_WINDOW_HEIGHT =
 
 const std::string GUI_WINDOW_NAME = "Biquardris++";
 
+const std::string GUI_BIG_FONT_QUERY =
+    "-*-helvetica-bold-r-*-*-48-*-*-*-*-*-*-*";
+const std::string GUI_NORMAL_FONT_QUERY =
+    "-*-helvetica-medium-r-*-*-16-*-*-*-*-*-*-*";
+
 GuiRenderer::GuiRenderer() {
     display = XOpenDisplay(NULL);
     if (!display) throw std::runtime_error("Couldn't open X display");
@@ -56,7 +61,20 @@ GuiRenderer::GuiRenderer() {
     XMapWindow(display, window);
 
     XFlush(display);
+
+    // load fonts
+    bigFont = XLoadQueryFont(display, GUI_BIG_FONT_QUERY.c_str());
+    if (!bigFont) {
+        bigFont = XLoadQueryFont(display, "fixed");  // fallback
+    }
+    normalFont = XLoadQueryFont(display, GUI_NORMAL_FONT_QUERY.c_str());
+    if (!normalFont) {
+        normalFont = XLoadQueryFont(display, "fixed");  // fallback
+    }
+    // normal font for gc
+    XSetFont(display, gc, normalFont->fid);
     XFlush(display);
+    usleep(1000);
 
     // Make window non-resizeable (stolen from demo)
     XSizeHints hints;
@@ -72,6 +90,8 @@ GuiRenderer::GuiRenderer() {
 }
 
 GuiRenderer::~GuiRenderer() {
+    if (bigFont) XFreeFont(display, bigFont);
+    if (normalFont) XFreeFont(display, normalFont);
     XFreeGC(display, gc);
     XCloseDisplay(display);
 }
