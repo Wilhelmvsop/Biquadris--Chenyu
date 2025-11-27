@@ -25,33 +25,35 @@ int main(int argc, char* argv[]) {
         } else if (flag == "-seed") {
             if (i + 1 >= args.size()) {
                 std::cerr << "Go goon" << std::endl;
-                return;
+                return 1;
             }
             seed = std::stoul(args[++i]);
         } else if (flag == "-scriptfile1") {
             if (i + 1 >= args.size()) {
                 std::cerr << "Go goon" << std::endl;
-                return;
+                return 1;
             }
             scriptfile1 = args[++i];
         } else if (flag == "-scriptfile2") {
             if (i + 1 >= args.size()) {
                 std::cerr << "Go goon" << std::endl;
-                return;
+                return 1;
             }
             scriptfile2 = args[++i];
         } else if (flag == "-startlevel") {
             if (i + 1 >= args.size()) {
                 std::cerr << "Go goon" << std::endl;
-                return;
+                return 1;
             }
             startLevel = std::stoi(args[++i]);
         } else {
             std::cerr << "Go GOON" << std::endl;
+            return 1;
         }
     }
 
     Game game{{tuiOnly, seed, scriptfile1, scriptfile2, startLevel,
-               std::make_shared<Inputhandler>()}};
+               std::make_shared<InputHandler>()}};
     game.play();
+    return 0;
 }
