@@ -14,6 +14,10 @@ import <stdexcept>;
 const std::string DEFAULT_SOURCE_FILE = "sequence1.txt";
 
 /////////////////////////// Debuff ///////////////////////////
+///
+Debuff::Debuff(int heaviness, bool blind, std::shared_ptr<Block> force,
+               std::pair<std::shared_ptr<Block>, int> insert)
+    : heaviness{heaviness}, blind{blind}, force{force}, insert{insert} {}
 
 bool Debuff::operator==(const Debuff& other) const {
     bool insertEq = false;
@@ -38,12 +42,14 @@ bool Debuff::operator==(const Debuff& other) const {
             heaviness == other.heaviness && blind == other.blind && forceEq);
 }
 
+bool Debuff::operator!=(const Debuff& other) const { return !(*this == other); }
+
 // add up the debuff
 Debuff Debuff::operator+(const Debuff& other) const {
     Debuff res{};
     res.heaviness = heaviness + other.heaviness;
     res.blind = blind || other.blind;
-    res.force = force ? force : other.force;
+    res.force = other.force ? other.force : force;  // use the new force
     res.insert = insert.first ? insert : other.insert;
     return res;
 }
@@ -232,7 +238,9 @@ std::shared_ptr<Block> Level3::getNextBlock() {
 
 Level4::Level4(unsigned int seed)
     : Level{4, true, DEFAULT_SOURCE_FILE, seed,
-            Debuff{1, false, nullptr, std::make_pair(std::make_shared<BombBlockCat>(getLevelNum()), 5)}} {}
+            Debuff{1, false, nullptr,
+                   std::make_pair(std::make_shared<BombBlockCat>(getLevelNum()),
+                                  5)}} {}
 
 std::shared_ptr<Block> Level4::randomNextBlock() {
     int rand = std::rand() % 9;
@@ -276,8 +284,9 @@ std::shared_ptr<Block> Level4::getNextBlock() {
 }
 
 /////////////////////////// LevelFactory ///////////////////////////
-std::shared_ptr<Level> LevelFactory::createLevel(int levelNum, unsigned int seed,
-                                 std::string srcfile) {
+std::shared_ptr<Level> LevelFactory::createLevel(int levelNum,
+                                                 unsigned int seed,
+                                                 std::string srcfile) {
     std::shared_ptr<Level> res;
     switch (levelNum) {
         case 0:

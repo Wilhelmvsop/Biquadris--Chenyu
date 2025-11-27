@@ -10,6 +10,7 @@ import <vector>;
 import <iostream>;
 import <climits>;
 import <algorithm>;
+import <stdexcept>;
 
 const int GUI_WINDOW_X = 100;
 const int GUI_WINDOW_Y = 100;
@@ -41,7 +42,7 @@ const std::string GUI_WINDOW_NAME = "Biquardris++";
 
 GuiRenderer::GuiRenderer() {
     display = XOpenDisplay(NULL);
-    if (!display) throw "Couldn't open X display";
+    if (!display) throw std::runtime_error("Couldn't open X display");
 
     screen = DefaultScreen(display);
     window = XCreateSimpleWindow(
@@ -163,12 +164,13 @@ void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
     renderHalf(p2, false);
 }
 
-void TuiRenderer::render(const RenderPackage &p1, const RenderPackage &p2) {
+void TuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
     // Header lines: level / score / highscore
-    auto printHeader = [](const RenderPackage &p) {
+    auto printHeader = [](const RenderPackage& p) {
         auto pad = [](int value, int width) {
             std::string s = std::to_string(value);
-            if ((int)s.size() < width) s = std::string(width - s.size(), ' ') + s;
+            if ((int)s.size() < width)
+                s = std::string(width - s.size(), ' ') + s;
             return s;
         };
         std::cout << "Level:" << pad(p.level, 3) << " ";
@@ -177,16 +179,16 @@ void TuiRenderer::render(const RenderPackage &p1, const RenderPackage &p2) {
     };
 
     // print Level line and Score line separately for each half
-    auto padToWidth = [](const std::string &s, int w) {
+    auto padToWidth = [](const std::string& s, int w) {
         if ((int)s.size() >= w) return s.substr(0, w);
         return s + std::string(w - s.size(), ' ');
     };
-    auto printLevelLine = [&](const RenderPackage &a, const RenderPackage &b) {
+    auto printLevelLine = [&](const RenderPackage& a, const RenderPackage& b) {
         std::string L = "Level: " + std::to_string(a.level);
         std::string R = "Level: " + std::to_string(b.level);
         std::cout << padToWidth(L, 11) << "  " << padToWidth(R, 11) << '\n';
     };
-    auto printScoreLine = [&](const RenderPackage &a, const RenderPackage &b) {
+    auto printScoreLine = [&](const RenderPackage& a, const RenderPackage& b) {
         std::string L = "Score: " + std::to_string(a.score);
         std::string R = "Score: " + std::to_string(b.score);
         std::cout << padToWidth(L, 11) << "  " << padToWidth(R, 11) << '\n';
@@ -195,10 +197,9 @@ void TuiRenderer::render(const RenderPackage &p1, const RenderPackage &p2) {
     printLevelLine(p1, p2);
     printScoreLine(p1, p2);
 
-    // print top dashed separator (centered across the 11 printed columns, with one-space padding each side -> total 13)
-    auto printTopBorder = [](void) {
-        std::cout << std::string(11, '-');
-    };
+    // print top dashed separator (centered across the 11 printed columns, with
+    // one-space padding each side -> total 13)
+    auto printTopBorder = [](void) { std::cout << std::string(11, '-'); };
     printTopBorder();
     std::cout << "  ";
     printTopBorder();
@@ -228,18 +229,21 @@ void TuiRenderer::render(const RenderPackage &p1, const RenderPackage &p2) {
     printTopBorder();
     std::cout << '\n';
 
-    // build Next: preview for each half and print side-by-side aligned with board (13 chars per half)
-    auto buildNextVec = [](const RenderPackage &p) {
-        const int halfDisplayWidth = 11; // match board width
+    // build Next: preview for each half and print side-by-side aligned with
+    // board (13 chars per half)
+    auto buildNextVec = [](const RenderPackage& p) {
+        const int halfDisplayWidth = 11;  // match board width
         std::vector<std::string> out;
         // First line: Next:
         std::string line = "Next:";
-        if ((int)line.size() < halfDisplayWidth) line += std::string(halfDisplayWidth - line.size(), ' ');
+        if ((int)line.size() < halfDisplayWidth)
+            line += std::string(halfDisplayWidth - line.size(), ' ');
         out.push_back(line);
 
         if (!p.nextBlock) {
             // no block: add a few empty lines
-            for (int i = 0; i < 3; ++i) out.push_back(std::string(halfDisplayWidth, ' '));
+            for (int i = 0; i < 3; ++i)
+                out.push_back(std::string(halfDisplayWidth, ' '));
             return out;
         }
 
@@ -247,7 +251,7 @@ void TuiRenderer::render(const RenderPackage &p1, const RenderPackage &p2) {
         auto coords = p.nextBlock->getCoords();
         char fill = p.nextBlock->getChar();
         int minR = INT_MAX, maxR = INT_MIN, minC = INT_MAX, maxC = INT_MIN;
-        for (auto &pr : coords) {
+        for (auto& pr : coords) {
             int r = pr.first;
             int c = pr.second;
             minR = std::min(minR, r);
@@ -262,10 +266,15 @@ void TuiRenderer::render(const RenderPackage &p1, const RenderPackage &p2) {
             std::string s;
             for (int c = minC; c <= maxC; ++c) {
                 bool occupied = false;
-                for (auto &pr : coords) if (pr.first == r && pr.second == c) { occupied = true; break; }
+                for (auto& pr : coords)
+                    if (pr.first == r && pr.second == c) {
+                        occupied = true;
+                        break;
+                    }
                 s.push_back(occupied ? fill : ' ');
             }
-            if ((int)s.size() < halfDisplayWidth) s += std::string(halfDisplayWidth - s.size(), ' ');
+            if ((int)s.size() < halfDisplayWidth)
+                s += std::string(halfDisplayWidth - s.size(), ' ');
             out.push_back(s);
         }
         return out;
@@ -274,8 +283,10 @@ void TuiRenderer::render(const RenderPackage &p1, const RenderPackage &p2) {
     auto leftNext = buildNextVec(p1);
     auto rightNext = buildNextVec(p2);
     for (size_t i = 0; i < leftNext.size() || i < rightNext.size(); ++i) {
-        std::string L = i < leftNext.size() ? leftNext[i] : std::string(13, ' ');
-        std::string R = i < rightNext.size() ? rightNext[i] : std::string(13, ' ');
+        std::string L =
+            i < leftNext.size() ? leftNext[i] : std::string(13, ' ');
+        std::string R =
+            i < rightNext.size() ? rightNext[i] : std::string(13, ' ');
         std::cout << L << "  " << R << '\n';
     }
     std::cout << '\n';

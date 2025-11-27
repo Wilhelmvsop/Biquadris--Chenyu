@@ -31,8 +31,7 @@ TEST_CASE(Player_PlayMove) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{};
-    auto res = Zibo.play("right", d);
+    auto res = Zibo.play("right");
     PlayResult expect{PlayStatus::Continue, {0, false, nullptr, {nullptr, 1}}};
     REQUIRE(expect == res);
 
@@ -54,9 +53,8 @@ TEST_CASE(Player_PlayLeft) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{};
-    Zibo.play("right", d);
-    auto res = Zibo.play("left", d);
+    Zibo.play("right");
+    auto res = Zibo.play("left");
     PlayResult expect{PlayStatus::Continue, {0, false, nullptr, {nullptr, 1}}};
     REQUIRE(expect == res);
 
@@ -78,8 +76,7 @@ TEST_CASE(Player_PlayDown) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{};
-    auto res = Zibo.play("down", d);
+    auto res = Zibo.play("down");
     PlayResult expect{PlayStatus::Continue, {0, false, nullptr, {nullptr, 1}}};
     REQUIRE(expect == res);
 
@@ -101,10 +98,9 @@ TEST_CASE(Player_PlayRotation) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{};
 
     // test clockwise
-    auto res = Zibo.play("clockwise", d);
+    auto res = Zibo.play("clockwise");
     PlayResult expect{PlayStatus::Continue, {0, false, nullptr, {nullptr, 1}}};
     REQUIRE(expect == res);
 
@@ -116,7 +112,7 @@ TEST_CASE(Player_PlayRotation) {
     }
 
     // test counterclockwise
-    res = Zibo.play("counterclockwise", d);
+    res = Zibo.play("counterclockwise");
     REQUIRE(expect == res);
 
     pixels = Zibo.getPixels();
@@ -137,10 +133,9 @@ TEST_CASE(Player_PlayDrop) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{};
 
     // drop first I
-    auto res = Zibo.play("drop", d);
+    auto res = Zibo.play("drop");
     PlayResult expect{PlayStatus::Endturn, {0, false, nullptr, {nullptr, 1}}};
     REQUIRE(expect == res);
     REQUIRE('I' == Zibo.getCurrentBlock()->getChar());
@@ -155,9 +150,9 @@ TEST_CASE(Player_PlayDrop) {
 
     // drop second I to the right of the first
     for (int i = 0; i < 4; ++i) {
-        Zibo.play("right", d);
+        Zibo.play("right");
     }
-    res = Zibo.play("drop", d);
+    res = Zibo.play("drop");
     REQUIRE(expect == res);
     REQUIRE('J' == Zibo.getCurrentBlock()->getChar());
     REQUIRE('I' == Zibo.getNextBlock()->getChar());
@@ -173,9 +168,9 @@ TEST_CASE(Player_PlayDrop) {
     // [          J  ]
     // [IIII IIII JJJ]
     for (int i = 0; i < 8; ++i) {
-        Zibo.play("right", d);
+        Zibo.play("right");
     }
-    res = Zibo.play("drop", d);
+    res = Zibo.play("drop");
 
     REQUIRE(expect == res);
     REQUIRE('I' == Zibo.getCurrentBlock()->getChar());
@@ -205,7 +200,6 @@ TEST_CASE(Player_PlayDrop_SpecialAction_Blind) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istringstream>("blind heavy force J")};
-    Debuff d{};
 
     // should end up like this before clear:
     // [               I]
@@ -213,18 +207,18 @@ TEST_CASE(Player_PlayDrop_SpecialAction_Blind) {
     // [OO OO OO OO OO I]
     // [OO OO OO OO OO I]
 
-    Zibo.play("drop", d);
-    for (int i = 0; i < 2; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    for (int i = 0; i < 4; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    for (int i = 0; i < 6; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    for (int i = 0; i < 8; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    Zibo.play("clockwise", d);
-    for (int i = 0; i < 10; ++i) Zibo.play("right", d);
-    PlayResult res = Zibo.play("drop", d);
+    Zibo.play("drop");
+    for (int i = 0; i < 2; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    for (int i = 0; i < 4; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    for (int i = 0; i < 6; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    for (int i = 0; i < 8; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    Zibo.play("clockwise");
+    for (int i = 0; i < 10; ++i) Zibo.play("right");
+    PlayResult res = Zibo.play("drop");
     PlayResult expectBlind{PlayStatus::Endturn,
                            {0, true, nullptr, {nullptr, 1}}};
     REQUIRE(expectBlind == res);
@@ -238,25 +232,24 @@ TEST_CASE(Player_PlayDrop_SpecialAction_Heavy) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istringstream>("heavy force J")};
-    Debuff d{};
 
     // should end up like this before clear:
     // [               I]
     // [               I]
     // [OO OO OO OO OO I]
     // [OO OO OO OO OO I]
-    Zibo.play("drop", d);
-    for (int i = 0; i < 2; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    for (int i = 0; i < 4; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    for (int i = 0; i < 6; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    for (int i = 0; i < 8; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    Zibo.play("clockwise", d);
-    for (int i = 0; i < 10; ++i) Zibo.play("right", d);
-    PlayResult res = Zibo.play("drop", d);
+    Zibo.play("drop");
+    for (int i = 0; i < 2; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    for (int i = 0; i < 4; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    for (int i = 0; i < 6; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    for (int i = 0; i < 8; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    Zibo.play("clockwise");
+    for (int i = 0; i < 10; ++i) Zibo.play("right");
+    PlayResult res = Zibo.play("drop");
     PlayResult expectHeavy{PlayStatus::Endturn,
                            {1, false, nullptr, {nullptr, 1}}};
     REQUIRE(expectHeavy == res);
@@ -272,25 +265,24 @@ TEST_CASE(Player_PlayDrop_SpecialAction_Force) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istringstream>("force J blind heavy")};
-    Debuff d{};
 
     // should end up like this before clear:
     // [               I]
     // [               I]
     // [OO OO OO OO OO I]
     // [OO OO OO OO OO I]
-    Zibo.play("drop", d);
-    for (int i = 0; i < 2; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    for (int i = 0; i < 4; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    for (int i = 0; i < 6; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    for (int i = 0; i < 8; ++i) Zibo.play("right", d);
-    Zibo.play("drop", d);
-    Zibo.play("clockwise", d);
-    for (int i = 0; i < 10; ++i) Zibo.play("right", d);
-    PlayResult res = Zibo.play("drop", d);
+    Zibo.play("drop");
+    for (int i = 0; i < 2; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    for (int i = 0; i < 4; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    for (int i = 0; i < 6; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    for (int i = 0; i < 8; ++i) Zibo.play("right");
+    Zibo.play("drop");
+    Zibo.play("clockwise");
+    for (int i = 0; i < 10; ++i) Zibo.play("right");
+    PlayResult res = Zibo.play("drop");
     BlockFactory bf{};
     std::shared_ptr<Block> expectedForcedBlock = bf.createBlock('J', 0);
     PlayResult expectForce{PlayStatus::Endturn,
@@ -308,10 +300,9 @@ TEST_CASE(Player_PlayDrop_Lost) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{};
 
-    for (int i = 0; i < 14; i++) Zibo.play("drop", d);
-    auto res = Zibo.play("drop", d);
+    for (int i = 0; i < 14; i++) Zibo.play("drop");
+    auto res = Zibo.play("drop");
     REQUIRE(res.status == PlayStatus::Lost);
 
     removeSeqFile(testFilePath);
@@ -377,22 +368,22 @@ TEST_CASE(Player_PlayLevelChange) {
                 std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{0, false, nullptr, {nullptr, 1}};
 
-    Zibo.play("levelup", d);
+    Zibo.play("levelup");
     REQUIRE(Zibo.getLevelNum() == initLevel + 1);
-    Zibo.play("levelup", d);
+    Zibo.play("levelup");
     REQUIRE(Zibo.getLevelNum() == initLevel + 2);
-    Zibo.play("levelup", d);
+    Zibo.play("levelup");
     REQUIRE(Zibo.getLevelNum() == initLevel + 3);
-    Zibo.play("levelup", d);
+    Zibo.play("levelup");
     REQUIRE(Zibo.getLevelNum() == initLevel + 4);
 
-    Zibo.play("leveldown", d);
+    Zibo.play("leveldown");
     REQUIRE(Zibo.getLevelNum() == initLevel + 3);
-    Zibo.play("leveldown", d);
+    Zibo.play("leveldown");
     REQUIRE(Zibo.getLevelNum() == initLevel + 2);
-    Zibo.play("leveldown", d);
+    Zibo.play("leveldown");
     REQUIRE(Zibo.getLevelNum() == initLevel + 1);
-    Zibo.play("leveldown", d);
+    Zibo.play("leveldown");
     REQUIRE(Zibo.getLevelNum() == initLevel);
 
     removeSeqFile(testFilePath);
@@ -409,25 +400,25 @@ TEST_CASE(Player_PlayNoRandom) {
                 std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{0, false, nullptr, {nullptr, 1}};
 
-    Zibo.play("norandom", d, testFilePath);
+    Zibo.play("norandom", testFilePath);
 
     // clear the first 2 random blocks
-    Zibo.play("drop", d);
-    Zibo.play("drop", d);
+    Zibo.play("drop");
+    Zibo.play("drop");
 
     // this should be non-random sequence
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'I');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'J');
-    Zibo.play("drop", d);
+    Zibo.play("drop");
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'J');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'Z');
-    Zibo.play("drop", d);
+    Zibo.play("drop");
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'Z');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'L');
-    Zibo.play("drop", d);
+    Zibo.play("drop");
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'L');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'O');
-    Zibo.play("drop", d);
+    Zibo.play("drop");
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'O');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'I');
 
@@ -445,23 +436,23 @@ TEST_CASE(Player_PlayRandom) {
                 std::make_shared<std::istream>(std::cin.rdbuf())};
     Debuff d{0, false, nullptr, {nullptr, 1}};
 
-    Zibo.play("norandom", d, testFilePath);
+    Zibo.play("norandom", testFilePath);
 
     // clear the first 2 random blocks
-    Zibo.play("drop", d);
-    Zibo.play("drop", d);
+    Zibo.play("drop");
+    Zibo.play("drop");
 
     // this should be non-random sequence
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'I');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'J');
-    Zibo.play("drop", d);
+    Zibo.play("drop");
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'J');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'Z');
 
-    Zibo.play("random", d);
+    Zibo.play("random");
     // clear 2 current non-random blocks
-    Zibo.play("drop", d);
-    Zibo.play("drop", d);
+    Zibo.play("drop");
+    Zibo.play("drop");
 
     // shouldn't generate exact sequence we used to set
     bool exactSeq = true;
@@ -471,7 +462,7 @@ TEST_CASE(Player_PlayRandom) {
         if (ch != currBlock) {
             exactSeq = false;
         }
-        auto res = Zibo.play("drop", d);
+        auto res = Zibo.play("drop");
         if (res.status == PlayStatus::Lost) {
             break;
         }
@@ -489,12 +480,11 @@ TEST_CASE(Player_PlayChar) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{};
 
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'I');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'J');
 
-    Zibo.play("L", d);
+    Zibo.play("L");
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'L');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'J');
 
@@ -509,15 +499,14 @@ TEST_CASE(Player_PlayRestart) {
     LevelFactory lf;
     Player Zibo{lf.createLevel(0, 67, testFilePath),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{};
 
     // [          J  ]
     // [IIII IIII JJJ]
-    auto res = Zibo.play("drop", d);
-    for (int i = 0; i < 4; ++i) Zibo.play("right", d);
-    res = Zibo.play("drop", d);
-    for (int i = 0; i < 8; ++i) Zibo.play("right", d);
-    res = Zibo.play("drop", d);
+    auto res = Zibo.play("drop");
+    for (int i = 0; i < 4; ++i) Zibo.play("right");
+    res = Zibo.play("drop");
+    for (int i = 0; i < 8; ++i) Zibo.play("right");
+    res = Zibo.play("drop");
 
     // clear 1 row and 2 blocks
     // (0 + 1)^2 + (0 + 1)^2 + (0 + 1)^2 = 3
@@ -527,7 +516,7 @@ TEST_CASE(Player_PlayRestart) {
     auto pixels = Zibo.getPixels();
     REQUIRE('J' == pixels[17][8]);
 
-    Zibo.play("restart", d);
+    Zibo.play("restart");
     REQUIRE(0 == Zibo.getScore());
     REQUIRE(3 == Zibo.getHighscore());
 
@@ -548,17 +537,17 @@ TEST_CASE(Player_Level4) {
     BlockFactory bf;
     Debuff d{0, false, nullptr, {nullptr, 1}};
 
-    Zibo.play("norandom", d, testFilePath);
+    Zibo.play("norandom", testFilePath);
     // clear first 2 random blocks at somewhere leftside
-    Zibo.play("drop", d);
-    Zibo.play("drop", d);
+    Zibo.play("drop");
+    Zibo.play("drop");
     REQUIRE(Zibo.getCurrentBlock()->getChar() == 'I');
     REQUIRE(Zibo.getNextBlock()->getChar() == 'J');
 
     // drop I J L at right side
     for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 10; ++j) Zibo.play("right", d);
-        auto res = Zibo.play("drop", d);
+        for (int j = 0; j < 10; ++j) Zibo.play("right");
+        auto res = Zibo.play("drop");
         if (res.status == PlayStatus::Lost) {
             break;
         }

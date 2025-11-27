@@ -7,12 +7,12 @@ export module Renderers;
 import Blocks;
 import <unordered_map>;
 import <memory>;
+import <vector>;
 
 export struct RenderPackage {
     int score;
     int highscore;
-    // 18 x 11 array, use pointer instead to not copy everything
-    const char (*pixels)[11];
+    std::vector<std::vector<char>> pixels;
     int level;
     std::shared_ptr<Block> nextBlock;
     bool lost;
@@ -57,8 +57,8 @@ export class GuiRenderer : public Renderer {
 
 // Text-based (terminal) renderer
 export class TuiRenderer : public Renderer {
-  public:
-     TuiRenderer() = default;
-     ~TuiRenderer() override = default;
-     void render(const RenderPackage &p1, const RenderPackage &p2) override;
+   public:
+    TuiRenderer() = default;
+    ~TuiRenderer() override = default;
+    void render(const RenderPackage& p1, const RenderPackage& p2) override;
 };

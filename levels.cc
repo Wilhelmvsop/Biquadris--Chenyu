@@ -15,7 +15,12 @@ export struct Debuff {
     std::shared_ptr<Block> force;
     std::pair<std::shared_ptr<Block>, int> insert;
 
+    Debuff(int heaviness = 0, bool blind = false,
+           std::shared_ptr<Block> force = nullptr,
+           std::pair<std::shared_ptr<Block>, int> insert = {nullptr, 1});
+
     bool operator==(const Debuff& other) const;
+    bool operator!=(const Debuff& other) const;
     // add up the debuff
     Debuff operator+(const Debuff& other) const;
     void operator+=(const Debuff& other);
@@ -26,7 +31,7 @@ export class LevelFactory {
     // createLevel return a new level according to levelNum
     // and set the seed and srcfile to a level. returns nullptr if level invalid
     std::shared_ptr<Level> createLevel(int levelNum = 0, unsigned int seed = 1,
-                       std::string srcfile = "");
+                                       std::string srcfile = "");
 
     // Levelup returns the one level harder of `level`.
     // maintains the seed and srcfile, BUT, the randomness

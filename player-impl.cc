@@ -9,8 +9,10 @@ import <string>;
 import <tuple>;
 import <utility>;
 import <memory>;
+import <stdexcept>;
 
-Player::Player(std::shared_ptr<Level> level, std::shared_ptr<std::istream> input)
+Player::Player(std::shared_ptr<Level> level,
+               std::shared_ptr<std::istream> input)
     : level{level},
       board{std::make_shared<Board>()},
       debuffs{level->getDebuff()},
@@ -27,20 +29,33 @@ Player::Player(std::shared_ptr<Level> level, std::shared_ptr<std::istream> input
 
 Player::~Player() {}
 
-std::shared_ptr<Block> Player::getCurrentBlock() const { return board->getCurrentBlock(); }
-std::shared_ptr<Block> Player::getNextBlock() const { return board->getNextBlock(); }
+bool Player::updateDebuff(const Debuff& d) {
+    debuffs = level->getDebuff() + d;
+    bool fits = true;
+    if (debuffs.force) {
+        fits = board->setCurrentBlock(debuffs.force);
+    }
+    return fits;
+}
+
+std::shared_ptr<Block> Player::getCurrentBlock() const {
+    return board->getCurrentBlock();
+}
+
+std::shared_ptr<Block> Player::getNextBlock() const {
+    return board->getNextBlock();
+}
+
 int Player::getScore() const { return score; }
 int Player::getHighscore() const { return highscore; }
 int Player::getLevelNum() const { return level->getLevelNum(); }
 
-std::vector<std::vector<char>> Player::getPixels(const Debuff& debuff) const {
-    // add up the current debuff with permanent debuff
-    Debuff curDebuff = debuff + this->debuffs;
+std::vector<std::vector<char>> Player::getPixels() const {
     Board::Canvas& canvas = this->board->getCanvas();
     std::vector<std::vector<char>> res(18, std::vector<char>(11, ' '));
     for (int row = 0; row < 18; ++row) {
         for (int col = 0; col < 11; ++col) {
-            if (curDebuff.blind && row >= 2 && row <= 11 && col >= 2 &&
+            if (debuffs.blind && row >= 2 && row <= 11 && col >= 2 &&
                 col <= 8) {
                 res[row][col] = '?';
             } else if (canvas[row][col]) {
@@ -73,26 +88,24 @@ int Player::calculateBlockScore(
 }
 
 // TODO: centralize command, not in here
-PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
-                        const std::string& extra) {
+PlayResult Player::play(const std::string& command, const std::string& extra,
+                        bool lastRep) {
     // add up current turn debuff with our permanent debuff
-    Debuff debuff = playDebuff + debuffs;
-    if (debuff.force) {
-        board->setCurrentBlock(debuff.force);
-    }
-
-    PlayResult res{PlayStatus::Continue, {0, false, nullptr, {nullptr, 1}}};
+    PlayResult res{PlayStatus::Continue, {}};
     if (command == "left") {
         board->left();
-        for (int i = 0; i < debuff.heaviness; ++i) {
-            board->down();
+        if (lastRep) {
+            for (int i = 0; i < debuffs.heaviness; ++i) {
+                board->down();
+            }
         }
     } else if (command == "right") {
         board->right();
-        for (int i = 0; i < debuff.heaviness; ++i) {
-            board->down();
+        if (lastRep) {
+            for (int i = 0; i < debuffs.heaviness; ++i) {
+                board->down();
+            }
         }
-
     } else if (command == "down") {
         board->down();
     } else if (command == "clockwise") {
@@ -147,8 +160,8 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
 
         // deal with debuff.insert
         ++numBlocksPlaced;
-        std::shared_ptr<Block> insertedBlock = debuff.insert.first;
-        int whenToInsert = debuff.insert.second;
+        std::shared_ptr<Block> insertedBlock = debuffs.insert.first;
+        int whenToInsert = debuffs.insert.second;
         if (insertedBlock && (numBlocksPlaced % whenToInsert == 0)) {
             std::shared_ptr<Block> currentBlock = board->getCurrentBlock();
             std::shared_ptr<Block> clonedCurrentBlock = currentBlock->clone();
@@ -212,7 +225,7 @@ PlayResult Player::play(const std::string& command, const Debuff& playDebuff,
         // reset debuff
         debuffs = level->getDebuff();
     } else {
-        throw "invalid command";
+        throw std::runtime_error("invalid command");
     }
 
     return res;
