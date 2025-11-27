@@ -153,7 +153,7 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
             XFillRectangle(display, window, gc, xAlias, y, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
             // outline
-            XSetForeground(display, gc, WhitePixel(display, screen));
+            XSetForeground(display, gc, BlackPixel(display, screen));
             XDrawRectangle(display, window, gc, xAlias, y, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
         }
@@ -189,7 +189,7 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
                            GUI_CELL_WIDTH);
 
             // outline
-            XSetForeground(display, gc, WhitePixel(display, screen));
+            XSetForeground(display, gc, BlackPixel(display, screen));
             XDrawRectangle(display, window, gc, xAlias, yAlias, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
         }
