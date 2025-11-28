@@ -55,11 +55,12 @@ export class Game {
 
     // say something and get input from user
     // return whether getting input succeed
-    std::istream& prompt(std::istream& in, std::string& response,
-                         const std::string& msg);
+    std::istream& prompt(std::string& response, const std::string& msg);
 
     // render 1 frame of the game. Take optional loser (1 or 2)
     void render(int whoLost = 0);
+    // switch game's input source (default cin)
+    void switchInput(const std::string filename = "");
 
    public:
     // Game(std::istream* in = &std::cin, InputHandler* ih = nullptr);
