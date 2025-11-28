@@ -51,20 +51,23 @@ They will be automatically discovered and compiled
 
 ### Writing tests
 Up to you, you can use my framework if you want. Here is how to use it
-
-Header version:
 1. Add `test/test_<module>.cc` file
-2. `#include "test_runner.h"` and `import` all what you need
+2. `import TestRunner;` and `import` all what you need
 3. For each test case, just do this
 ```c++
-TESTCASE(TestCaseName) {
+void testName() {
     // ... test your thing
     bool ronIsCool = true;
-    REQUIRE(ronIsCool == true);
+    Tester::assert_true(ronIsCool == true, "message if you want");
+    // or you can do
+    Tester::assert_equal(true, ronIsCool, "message if you want");
 }
 ```
-4. Now you can do `make test`. That's it.
-
-Module version:
-doesnt' work yet. Hold on.
+4. At the end of test file, do this to register all test to runners:
+```c++
+namespace {
+Tester::TestRegistrar registerName("Test name",testName);
+}  
+```
+5. Now you can do `make test`. That's it.
 
