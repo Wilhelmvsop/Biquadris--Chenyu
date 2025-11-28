@@ -130,6 +130,10 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
               100);
     }
 
+    std::vector<XSegment> segments{};
+    std::vector<XRectangle> rects{};
+    std::vector<char> types{};
+
     // render top part;
     XSetForeground(display, gc, WhitePixel(display, screen));
     y += GUI_CELL_WIDTH;
@@ -144,20 +148,20 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
     y += GUI_CELL_WIDTH;
     int xBorder =
         left ? 0 : x - ((2 * GUI_WINDOW_WIDTH * GUI_MARGIN_X_PERCENT) / 100);
-    XDrawLine(display, pixmap, gc, xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2),
-              y);
+    segments.emplace_back(
+        XSegment{xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2), y});
 
     y += GUI_CELL_WIDTH;
     // render board outline:
     int xGrid = x;
-    for (int colLine = 0; colLine < 12; ++colLine, xGrid += GUI_CELL_WIDTH) {
-        XDrawLine(display, pixmap, gc, xGrid, y, xGrid,
-                  y + (18 * GUI_CELL_WIDTH));
+    for (int i = 0; i < 12; ++i, xGrid += GUI_CELL_WIDTH) {
+        segments.emplace_back(
+            XSegment{xGrid, y, xGrid, y + (18 * GUI_CELL_WIDTH)});
     }
     int yGrid = y;
-    for (int rowLine = 0; rowLine < 19; ++rowLine, yGrid += GUI_CELL_WIDTH) {
-        XDrawLine(display, pixmap, gc, x, yGrid, x + (11 * GUI_CELL_WIDTH),
-                  yGrid);
+    for (int i = 0; i < 19; ++i, yGrid += GUI_CELL_WIDTH) {
+        segments.emplace_back(
+            XSegment{x, yGrid, x + (11 * GUI_CELL_WIDTH), yGrid});
     }
 
     // render blocks:
@@ -166,51 +170,56 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
         for (int col = 0; col < 11; ++col, xAlias += GUI_CELL_WIDTH) {
             char c = pkg.pixels[row][col];
             if (c == ' ') continue;
-            unsigned long color = colorMap.at(c);
-            // fill color
-            XSetForeground(display, gc, color);
-            XFillRectangle(display, pixmap, gc, xAlias, y, GUI_CELL_WIDTH,
-                           GUI_CELL_WIDTH);
-            // outline
-            XSetForeground(display, gc, BlackPixel(display, screen));
-            XDrawRectangle(display, pixmap, gc, xAlias, y, GUI_CELL_WIDTH,
-                           GUI_CELL_WIDTH);
+            rects.emplace_back(
+                XRectangle{xAlias, y, GUI_CELL_WIDTH, GUI_CELL_WIDTH});
+            types.emplace_back(c);
         }
     }
 
     // render bottom part:
-    XSetForeground(display, gc, WhitePixel(display, screen));
-    // bottom part top line:
-    XDrawLine(display, pixmap, gc, xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2),
-              y);
+    segments.emplace_back(
+        XSegment{xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2), y});
     y += GUI_CELL_WIDTH;
     XDrawString(display, pixmap, gc, x, y, nextMsg.c_str(), nextMsg.length());
 
     if (pkg.nextBlock) {
         const std::vector<std::pair<int, int>> coords =
             pkg.nextBlock->getCoords();
-        const unsigned long color = colorMap.at(pkg.nextBlock->getChar());
+        const char nextC = pkg.nextBlock->getChar();
+        // const unsigned long color = colorMap.at(pkg.nextBlock->getChar());
 
         // offset to kinda make it at the middle
         // (so that (0, 0) coord can be at the middle bottom)
         const int xOffset = 3;
         const int yOffset = -2;
 
-        // block use (row, col) coord, so it's (y, x)
+        // block use (row, col) coord, so it's (y+3, x)
         for (auto& [yCoord, xCoord] : coords) {
             int xAlias = x + ((xCoord + xOffset) * GUI_CELL_WIDTH);
             int yAlias = y + ((yCoord + yOffset) * GUI_CELL_WIDTH);
-            // color
-            XSetForeground(display, gc, color);
-            XFillRectangle(display, pixmap, gc, xAlias, yAlias, GUI_CELL_WIDTH,
-                           GUI_CELL_WIDTH);
-
-            // outline
-            XSetForeground(display, gc, BlackPixel(display, screen));
-            XDrawRectangle(display, pixmap, gc, xAlias, yAlias, GUI_CELL_WIDTH,
-                           GUI_CELL_WIDTH);
+            rects.emplace_back(
+                XRectangle{xAlias, yAlias, GUI_CELL_WIDTH, GUI_CELL_WIDTH});
+            types.emplace_back(nextC);
         }
     }
+
+    // render all segments
+    XDrawSegments(display, pixmap, gc, segments.data(), segments.size());
+
+    // render all rectangles
+    std::unordered_map<char, std::vector<XRectangle>> coloredRects;
+    for (unsigned int i = 0; i < rects.size(); ++i) {
+        coloredRects[types[i]].emplace_back(rects[i]);
+    }
+
+    for (auto& [c, rectG] : coloredRects) {
+        unsigned long color = colorMap.at(c);
+        XSetForeground(display, gc, color);
+        XFillRectangles(display, pixmap, gc, rectG.data(), rectG.size());
+    }
+
+    XSetForeground(display, gc, BlackPixel(display, screen));
+    XDrawRectangles(display, pixmap, gc, rects.data(), rects.size());
 }
 
 void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
