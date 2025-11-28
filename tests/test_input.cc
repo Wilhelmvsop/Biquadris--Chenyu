@@ -1,7 +1,7 @@
 import <iostream>;
 import <string>;
 import InputHandler;
-#include "test_runner.h"
+import TestRunner;
 using namespace std;
 
 InputHandler ih;

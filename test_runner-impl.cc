@@ -1,4 +1,4 @@
-#include "test_runner.h"
+module TestRunner;
 
 namespace Tester {
 std::vector<TestCase>& get_tests() {

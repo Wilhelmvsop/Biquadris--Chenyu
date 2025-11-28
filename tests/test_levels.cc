@@ -1,5 +1,6 @@
 import Levels;
 import Blocks;
+import TestRunner;
 
 import <iostream>;
 import <fstream>;
@@ -8,25 +9,32 @@ import <map>;
 import <string>;
 import <memory>;
 
-#include "test_runner.h"
+void setupSeqFile(const std::string& testFilePath,
+                  const std::string& testContent);
+void removeSeqFile(const std::string& testFilePath);
 
 TEST_CASE(LevelFactory_LevelCreation) {
     LevelFactory factory;
+    const std::string seqFilePath = "factory_test.txt";
+    setupSeqFile(seqFilePath, "I O");
 
     for (unsigned int i = 0; i < 5; ++i) {
-        std::shared_ptr<Level> lvi = factory.createLevel(i, i, "factory_test.txt");
+        std::shared_ptr<Level> lvi =
+            factory.createLevel(i, i, "factory_test.txt");
 
         REQUIRE(lvi->getLevelNum() == i);
         REQUIRE(lvi->getSeed() == i);
         REQUIRE(lvi->getSrcfile() == "factory_test.txt");
         REQUIRE(lvi->getRandom() == i > 0);
     }
+    removeSeqFile(seqFilePath);
 }
 
 TEST_CASE(LevelFactory_Levelup) {
     LevelFactory factory;
     const unsigned int expectedSeed = 1;
     const std::string expectedSrcfile = "factory_test2.txt";
+    setupSeqFile(expectedSrcfile, "I O Z");
 
     std::shared_ptr<Level> lv = nullptr;
     int i = 0;
@@ -46,12 +54,14 @@ TEST_CASE(LevelFactory_Levelup) {
     REQUIRE(lv->getLevelNum() == 4);  // level up shouldn't affect level 4
     REQUIRE(lv->getSeed() == expectedSeed);
     REQUIRE(lv->getSrcfile() == expectedSrcfile);
+    removeSeqFile(expectedSrcfile);
 }
 
 TEST_CASE(LevelFactory_Leveldown) {
     LevelFactory factory;
     const unsigned int expectedSeed = 2;
     const std::string expectedSrcfile = "factory_test3.txt";
+    setupSeqFile(expectedSrcfile, "I O");
 
     std::shared_ptr<Level> lv = nullptr;
     int i = 4;
@@ -71,6 +81,7 @@ TEST_CASE(LevelFactory_Leveldown) {
     REQUIRE(lv->getLevelNum() == 0);  // level down shouldn't affect level 0
     REQUIRE(lv->getSeed() == expectedSeed);
     REQUIRE(lv->getSrcfile() == expectedSrcfile);
+    removeSeqFile(expectedSrcfile);
 }
 
 TEST_CASE(Level0_BlockGeneration) {
@@ -126,9 +137,9 @@ TEST_CASE(Level0_BlockGeneration_SrcCirculation) {
     std::filesystem::remove(testFilePath);
 }
 
-void test_distribution(std::shared_ptr<Level> level, int ratio_S, int ratio_Z, int ratio_I,
-                       int ratio_J, int ratio_L, int ratio_O, int ratio_T,
-                       int num_samples) {
+void test_distribution(std::shared_ptr<Level> level, int ratio_S, int ratio_Z,
+                       int ratio_I, int ratio_J, int ratio_L, int ratio_O,
+                       int ratio_T, int num_samples) {
     std::map<char, int> counts;
 
     for (int i = 0; i < num_samples; i++) {

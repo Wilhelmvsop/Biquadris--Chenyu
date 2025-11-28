@@ -1,11 +1,12 @@
-#pragma once
+export module TestRunner;
 
 import <iostream>;
 import <vector>;
 import <string>;
 import <functional>;
+import <stdexcept>;
 
-namespace Tester {
+export namespace Tester {
 struct TestCase {
     std::string name;
     std::function<void()> test_func;
@@ -27,7 +28,7 @@ void assert_equal(const T& expected, const T& actual,
 int run_all_tests();
 }  // namespace Tester
 
-// Macros for convenience (similar to Catch2)
+// Macros AFTER the module interface
 #define TEST_CASE(name)                                                       \
     static void test_##name();                                                \
     namespace {                                                               \

@@ -50,6 +50,12 @@ int Player::getScore() const { return score; }
 int Player::getHighscore() const { return highscore; }
 int Player::getLevelNum() const { return level->getLevelNum(); }
 
+void Player::say(const std::string& msg) const {
+#ifndef TESTING
+    std::cout << msg << std::endl;
+#endif
+}
+
 std::vector<std::vector<char>> Player::getPixels() const {
     Board::Canvas& canvas = this->board->getCanvas();
     std::vector<std::vector<char>> res(18, std::vector<char>(11, ' '));
@@ -132,10 +138,9 @@ PlayResult Player::play(const std::string& command, const std::string& extra,
         // check special action
         if (numRowsCleared >= 2) {
             std::string specialAction;
-#ifndef TESTING
-            std::cout << "Choose your special action (blind, heavy, force "
-                         "[block]): ";
-#endif
+            const std::string msg =
+                "Choose your special action (blind, heavy, force [block])";
+            say(msg);
             while ((*input) >> specialAction) {
                 if ("blind" == specialAction) {
                     res.debuff.blind = true;
@@ -152,9 +157,7 @@ PlayResult Player::play(const std::string& command, const std::string& extra,
                     res.debuff.force = forcedBlockPtr;
                     break;
                 } else {
-#ifndef TESTING
-                    std::cout << std::endl << "Invalid effect. Try again: ";
-#endif
+                    say("Invalid effect. Try again.");
                 }
             }
         }

@@ -34,6 +34,8 @@ export class Player {
     // calculate scores from blocksCleared and delete them
     int calculateBlockScore(
         const std::vector<std::shared_ptr<Block>>& blocksCleared) const;
+    // say something to users when build for prod
+    void say(const std::string& msg) const;
 
    public:
     // take the target level and set up a new board (player owns the board)

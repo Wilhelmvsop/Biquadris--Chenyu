@@ -8,7 +8,7 @@ TEST_RENDER_DIR = test_render
 OBJ_DIR = objects
 
 ##################################################################
-# GOON0: ONLY EDIT THIS SECTION TO ADD NEW STANDARD LIBRARY
+# POINT0: ONLY EDIT THIS SECTION TO ADD NEW STANDARD LIBRARY
 ##################################################################
 SYSTEM_HEADERS = iostream utility algorithm vector  functional cstdlib \
 				 fstream filesystem sstream map memory unordered_map stdexcept \
@@ -21,13 +21,13 @@ TARGET = biq
 MAIN_SOURCE = main.cc
 
 ##################################################################
-# GOON1: ONLY EDIT THIS SECTION TO ADD NEW MODULES
+# POINT1: ONLY EDIT THIS SECTION TO ADD NEW MODULES
 ##################################################################
 # List your module interface files here (in dependency order)
-MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc board.cc renderers.cc player.cc game.cc
+MODULE_INTERFACES = input_handler.cc blocks.cc levels.cc board.cc renderers.cc player.cc game.cc test_runner.cc
 
 # List your module implementation files here (same order as interfaces)
-MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc board-impl.cc renderers-impl.cc player-impl.cc game-impl.cc
+MODULE_IMPLS = input_handler-impl.cc blocks-impl.cc levels-impl.cc board-impl.cc renderers-impl.cc player-impl.cc game-impl.cc test_runner-impl.cc
 #################################################################
 
 # Automatically generate object file names from source files (in objects/ dir)
@@ -42,8 +42,6 @@ TEST_SOURCES = $(filter-out $(TEST_DIR)/test_runner.cc $(TEST_DIR)/test_main.cc,
 TEST_OBJECTS = $(patsubst $(TEST_DIR)/%.cc, $(OBJ_DIR)/%.o, $(TEST_SOURCES))
 
 # Test framework files
-TEST_RUNNER_SOURCE = $(TEST_DIR)/test_runner.cc
-TEST_RUNNER_OBJECT = $(OBJ_DIR)/test_runner.o
 TEST_MAIN_SOURCE = $(TEST_DIR)/test_main.cc
 TEST_MAIN_OBJECT = $(OBJ_DIR)/test_main.o
 
@@ -80,7 +78,7 @@ $(TARGET): $(MAIN_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(MAIN_OBJECTS) -lX11 -o $(TARGET)
 
 ##################################################################
-# GOON2: MODULE DEPENDENCIES: Add rules for your modules here
+# POINT2: MODULE DEPENDENCIES: Add rules for your modules here
 ##################################################################
 # Pattern: each module compiles to objects/ directory
 $(OBJ_DIR)/%.o: %.cc $(HEADERS_COMPILED) | $(OBJ_DIR)
@@ -99,7 +97,7 @@ $(OBJ_DIR)/player.o: player.cc $(OBJ_DIR)/board.o $(OBJ_DIR)/blocks.o $(OBJ_DIR)
 $(OBJ_DIR)/player-impl.o: player-impl.cc $(OBJ_DIR)/player.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/game.o: game.cc $(OBJ_DIR)/player.o $(OBJ_DIR)/input_handler.o $(OBJ_DIR)/levels.o $(OBJ_DIR)/renderers.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 $(OBJ_DIR)/game-impl.o: game-impl.cc $(OBJ_DIR)/game.o $(HEADERS_COMPILED) | $(OBJ_DIR)
-
+$(OBJ_DIR)/test_runner-impl.o: test_runner-impl.cc $(OBJ_DIR)/test_runner.o $(HEADERS_COMPILED) | $(OBJ_DIR)
 
 
 # Main depends on all module interfaces
@@ -112,20 +110,18 @@ test: CXXFLAGS += -DTESTING
 test:
 	@echo "Preparing test build (force recompile of modules with -DTESTING)..."
 	# Remove module objects so they are recompiled with -DTESTING
-	@rm -f $(MODULE_OBJECTS) $(MODULE_IMPL_OBJECTS) $(MODULE_INTERFACE_OBJECTS) $(TEST_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_MAIN_OBJECT)
+	@rm -f $(MODULE_OBJECTS) $(MODULE_IMPL_OBJECTS) $(MODULE_INTERFACE_OBJECTS) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT)
 	@$(MAKE) $(TEST_EXEC)
 	@echo "Running tests..."
 	@./$(TEST_EXEC)
 
 # Build test executable (uses same module objects as main program)
-$(TEST_EXEC): $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) $(HEADERS_COMPILED)
+# $(TEST_EXEC): $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) $(HEADERS_COMPILED)
+# 	@echo "Linking test executable..."
+# 	$(CXX) $(CXXFLAGS) $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) -lX11 -o $(TEST_EXEC)
+$(TEST_EXEC): $(MODULE_OBJECTS) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) $(HEADERS_COMPILED)
 	@echo "Linking test executable..."
-	$(CXX) $(CXXFLAGS) $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) -lX11 -o $(TEST_EXEC)
-
-# Compile test runner implementation
-$(TEST_RUNNER_OBJECT): $(TEST_RUNNER_SOURCE) $(HEADERS_COMPILED) | $(OBJ_DIR)
-	@echo "Compiling test runner..."
-	$(CXX) $(CXXFLAGS) -c $(TEST_RUNNER_SOURCE) -o $(TEST_RUNNER_OBJECT)
+	$(CXX) $(CXXFLAGS) $(MODULE_OBJECTS) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) -lX11 -o $(TEST_EXEC)
 
 # Compile test main
 $(TEST_MAIN_OBJECT): $(TEST_MAIN_SOURCE) $(HEADERS_COMPILED) | $(OBJ_DIR)
@@ -180,10 +176,10 @@ help:
 	@echo "  make help   - Show this message"
 	@echo ""
 	@echo "To add a new module:"
-	@echo "  0. If needed, add new standard library module (e.g. iostream) <- search GOON0"
-	@echo "  1. Add interface file to MODULE_INTERFACES (e.g., list.cc) <- search GOON1"
-	@echo "  2. Add implementation file to MODULE_IMPLS (e.g., list-impl.cc) <- search GOON1"
-	@echo "  3. Add dependency rule: \$$(OBJ_DIR)/list-impl.o: list-impl.cc \$$(OBJ_DIR)/list.o <- search GOON2"
+	@echo "  0. If needed, add new standard library module (e.g. iostream) <- search POINT0"
+	@echo "  1. Add interface file to MODULE_INTERFACES (e.g., list.cc) <- search POINT1"
+	@echo "  2. Add implementation file to MODULE_IMPLS (e.g., list-impl.cc) <- search POINT1"
+	@echo "  3. Add dependency rule: \$$(OBJ_DIR)/list-impl.o: list-impl.cc \$$(OBJ_DIR)/list.o <- search POINT2"
 	@echo ""
 	@echo "To add tests: create tests/test_<module>.cc files"
 	@echo "To add rendering tests: create test_render/test_<name>.cc files"

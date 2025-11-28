@@ -2,14 +2,13 @@ import Player;
 import Levels;
 import Blocks;
 import Board;
+import TestRunner;
 
 import <fstream>;
 import <filesystem>;
 import <iostream>;
 import <utility>;
 import <memory>;
-
-#include "test_runner.h"
 
 void setupSeqFile(const std::string& testFilePath,
                   const std::string& testContent) {
@@ -319,7 +318,8 @@ TEST_CASE(Player_PlayDrop_Debuffed_Heavy) {
     Debuff heavy{1, false, nullptr, {nullptr, 1}};
 
     // should be down by one after right
-    Zibo.play("right", heavy);
+    Zibo.updateDebuff(heavy);
+    Zibo.play("right");
     std::vector<std::pair<int, int>> expectCoords = {
         {3, 1}, {3, 2}, {4, 2}, {4, 3}};
     auto pixels = Zibo.getPixels();
@@ -328,7 +328,7 @@ TEST_CASE(Player_PlayDrop_Debuffed_Heavy) {
     }
 
     // another down by one after left
-    Zibo.play("left", heavy);
+    Zibo.play("left");
     std::vector<std::pair<int, int>> expectCoords2 = {
         {4, 0}, {4, 1}, {5, 1}, {5, 2}};
     pixels = Zibo.getPixels();
@@ -350,7 +350,8 @@ TEST_CASE(Player_PlayDrop_Debuffed_Force) {
     BlockFactory bf;
     Debuff forceL{0, false, bf.createBlock('L', 0), {nullptr, 1}};
 
-    Zibo.play("drop", forceL);
+    Zibo.updateDebuff(forceL);
+    Zibo.play("drop");
     auto pixels = Zibo.getPixels();
     REQUIRE(pixels[17][0] == 'L');
 
@@ -398,7 +399,6 @@ TEST_CASE(Player_PlayNoRandom) {
     int initLevel = 3;  // should work on level 3 or 4
     Player Zibo{lf.createLevel(initLevel, 67, "fakeFilepath.txt"),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{0, false, nullptr, {nullptr, 1}};
 
     Zibo.play("norandom", testFilePath);
 
@@ -434,7 +434,6 @@ TEST_CASE(Player_PlayRandom) {
     int initLevel = 3;  // should work on level 3 or 4
     Player Zibo{lf.createLevel(initLevel, 67, "fakeFilepath.txt"),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
-    Debuff d{0, false, nullptr, {nullptr, 1}};
 
     Zibo.play("norandom", testFilePath);
 
@@ -535,7 +534,6 @@ TEST_CASE(Player_Level4) {
     Player Zibo{lf.createLevel(4, 67, "fakeFilePath.txt"),
                 std::make_shared<std::istream>(std::cin.rdbuf())};
     BlockFactory bf;
-    Debuff d{0, false, nullptr, {nullptr, 1}};
 
     Zibo.play("norandom", testFilePath);
     // clear first 2 random blocks at somewhere leftside
