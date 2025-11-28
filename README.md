@@ -15,7 +15,6 @@
 
 ## NOTES:
 - For block coordinates, set (r, c) (0, 0) as the 15th row first column, number increases downward and to the right
-- For GUI renderers impl, everytime you `XFlush()`, I recommend `usleep()` for like 1ms (`usleep(1000)`)
 ---
 
 ## Style Guide:
@@ -52,16 +51,23 @@ They will be automatically discovered and compiled
 
 ### Writing tests
 Up to you, you can use my framework if you want. Here is how to use it
-
 1. Add `test/test_<module>.cc` file
-2. `#include "test_runner.h"` and `import` all what you need
+2. `import TestRunner;` and `import` all what you need
 3. For each test case, just do this
 ```c++
-TESTCASE(TestCaseName) {
+void testName() {
     // ... test your thing
     bool ronIsCool = true;
-    REQUIRE(ronIsCool == true);
+    Tester::assert_true(ronIsCool == true, "message if you want");
+    // or you can do
+    Tester::assert_equal(true, ronIsCool, "message if you want");
 }
 ```
-4. Now you can do `make test`. That's it
+4. At the end of test file, do this to register all test to runners:
+```c++
+namespace {
+Tester::TestRegistrar registerName("Test name",testName);
+}  
+```
+5. Now you can do `make test`. That's it.
 

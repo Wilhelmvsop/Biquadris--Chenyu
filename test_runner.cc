@@ -14,7 +14,7 @@ struct TestCase {
 
 std::vector<TestCase>& get_tests();
 void register_test(const std::string& name, std::function<void()> func);
-void assert_true(bool condition, const std::string& message);
+void assert_true(bool condition, const std::string& message = "");
 
 template <typename T>
 void assert_equal(const T& expected, const T& actual,
@@ -26,19 +26,11 @@ void assert_equal(const T& expected, const T& actual,
 }
 
 int run_all_tests();
+
+// Helper class for automatic test registration
+struct TestRegistrar {
+    TestRegistrar(const std::string& name, std::function<void()> func) {
+        register_test(name, func);
+    }
+};
 }  // namespace Tester
-
-// Macros AFTER the module interface
-#define TEST_CASE(name)                                                       \
-    static void test_##name();                                                \
-    namespace {                                                               \
-    struct TestRegistrar_##name {                                             \
-        TestRegistrar_##name() { Tester::register_test(#name, test_##name); } \
-    } registrar_##name;                                                       \
-    }                                                                         \
-    static void test_##name()
-
-#define REQUIRE(condition) Tester::assert_true(condition, #condition)
-
-#define REQUIRE_EQUAL(expected, actual) \
-    Tester::assert_equal(expected, actual, #expected " == " #actual)
