@@ -13,7 +13,7 @@ void setupSeqFile(const std::string& testFilePath,
                   const std::string& testContent);
 void removeSeqFile(const std::string& testFilePath);
 
-TEST_CASE(LevelFactory_LevelCreation) {
+void LevelFactoryLevelCreation() {
     LevelFactory factory;
     const std::string seqFilePath = "factory_test.txt";
     setupSeqFile(seqFilePath, "I O");
@@ -22,15 +22,15 @@ TEST_CASE(LevelFactory_LevelCreation) {
         std::shared_ptr<Level> lvi =
             factory.createLevel(i, i, "factory_test.txt");
 
-        REQUIRE(lvi->getLevelNum() == i);
-        REQUIRE(lvi->getSeed() == i);
-        REQUIRE(lvi->getSrcfile() == "factory_test.txt");
-        REQUIRE(lvi->getRandom() == i > 0);
+        Tester::assert_true(lvi->getLevelNum() == i);
+        Tester::assert_true(lvi->getSeed() == i);
+        Tester::assert_true(lvi->getSrcfile() == "factory_test.txt");
+        Tester::assert_true(lvi->getRandom() == i > 0);
     }
     removeSeqFile(seqFilePath);
 }
 
-TEST_CASE(LevelFactory_Levelup) {
+void LevelFactoryLevelup() {
     LevelFactory factory;
     const unsigned int expectedSeed = 1;
     const std::string expectedSrcfile = "factory_test2.txt";
@@ -45,19 +45,20 @@ TEST_CASE(LevelFactory_Levelup) {
             lv = factory.levelup(lv);
         }
 
-        REQUIRE(lv->getLevelNum() == i);
-        REQUIRE(lv->getSeed() == expectedSeed);
-        REQUIRE(lv->getSrcfile() == expectedSrcfile);
+        Tester::assert_true(lv->getLevelNum() == i);
+        Tester::assert_true(lv->getSeed() == expectedSeed);
+        Tester::assert_true(lv->getSrcfile() == expectedSrcfile);
     }
 
     lv = factory.levelup(lv);
-    REQUIRE(lv->getLevelNum() == 4);  // level up shouldn't affect level 4
-    REQUIRE(lv->getSeed() == expectedSeed);
-    REQUIRE(lv->getSrcfile() == expectedSrcfile);
+    Tester::assert_true(lv->getLevelNum() ==
+                        4);  // level up shouldn't affect level 4
+    Tester::assert_true(lv->getSeed() == expectedSeed);
+    Tester::assert_true(lv->getSrcfile() == expectedSrcfile);
     removeSeqFile(expectedSrcfile);
 }
 
-TEST_CASE(LevelFactory_Leveldown) {
+void LevelFactoryLeveldown() {
     LevelFactory factory;
     const unsigned int expectedSeed = 2;
     const std::string expectedSrcfile = "factory_test3.txt";
@@ -72,19 +73,20 @@ TEST_CASE(LevelFactory_Leveldown) {
             lv = factory.leveldown(lv);
         }
 
-        REQUIRE(lv->getLevelNum() == i);
-        REQUIRE(lv->getSeed() == expectedSeed);
-        REQUIRE(lv->getSrcfile() == expectedSrcfile);
+        Tester::assert_true(lv->getLevelNum() == i);
+        Tester::assert_true(lv->getSeed() == expectedSeed);
+        Tester::assert_true(lv->getSrcfile() == expectedSrcfile);
     }
 
     lv = factory.leveldown(lv);
-    REQUIRE(lv->getLevelNum() == 0);  // level down shouldn't affect level 0
-    REQUIRE(lv->getSeed() == expectedSeed);
-    REQUIRE(lv->getSrcfile() == expectedSrcfile);
+    Tester::assert_true(lv->getLevelNum() ==
+                        0);  // level down shouldn't affect level 0
+    Tester::assert_true(lv->getSeed() == expectedSeed);
+    Tester::assert_true(lv->getSrcfile() == expectedSrcfile);
     removeSeqFile(expectedSrcfile);
 }
 
-TEST_CASE(Level0_BlockGeneration) {
+void Level0BlockGeneration() {
     const std::string testFilePath = "level0_test_1.txt";
     std::ofstream testFile{testFilePath};
 
@@ -100,13 +102,13 @@ TEST_CASE(Level0_BlockGeneration) {
         char expected = c;
         std::shared_ptr<Block> block = lv0->getNextBlock();
         char actual = block->getChar();
-        REQUIRE(expected == actual);
+        Tester::assert_true(expected == actual);
     }
 
     std::filesystem::remove(testFilePath);
 }
 
-TEST_CASE(Level0_BlockGeneration_SrcCirculation) {
+void Level0BlockGenerationSrcCirculation() {
     const std::string testFilePath = "level0_test_2.txt";
     std::ofstream testFile{testFilePath};
 
@@ -122,7 +124,7 @@ TEST_CASE(Level0_BlockGeneration_SrcCirculation) {
         char expected = c;
         std::shared_ptr<Block> block = lv0->getNextBlock();
         char actual = block->getChar();
-        REQUIRE(expected == actual);
+        Tester::assert_true(expected == actual);
     }
 
     // check if it goes back at the beginning of file
@@ -131,7 +133,7 @@ TEST_CASE(Level0_BlockGeneration_SrcCirculation) {
         char expected = c;
         std::shared_ptr<Block> block = lv0->getNextBlock();
         char actual = block->getChar();
-        REQUIRE(expected == actual);
+        Tester::assert_true(expected == actual);
     }
 
     std::filesystem::remove(testFilePath);
@@ -173,26 +175,41 @@ void test_distribution(std::shared_ptr<Level> level, int ratio_S, int ratio_Z,
     check_range('T', ratio_T);
 }
 
-TEST_CASE(Level1_distribution) {
+void Level1distribution() {
     std::shared_ptr<Level1> lv1 = std::make_shared<Level1>(42);
     // Level1: S=1/12, Z=1/12, rest=2/12 each
     test_distribution(lv1, 1, 1, 2, 2, 2, 2, 2, 15000);
 }
 
-TEST_CASE(Level2_distribution) {
+void Level2distribution() {
     std::shared_ptr<Level2> lv2 = std::make_shared<Level2>(42);
     // Level2: all equal
     test_distribution(lv2, 1, 1, 1, 1, 1, 1, 1, 15000);
 }
 
-TEST_CASE(Level3_distribution) {
+void Level3distribution() {
     std::shared_ptr<Level3> lv3 = std::make_shared<Level3>(42);
     // Level3: S=2/9, Z=2/9, rest=1/9 each
     test_distribution(lv3, 2, 2, 1, 1, 1, 1, 1, 15000);
 }
 
-TEST_CASE(Level4_distribution) {
+void Level4distribution() {
     std::shared_ptr<Level4> lv4 = std::make_shared<Level4>(42);
     // Level4: same as Level3
     test_distribution(lv4, 2, 2, 1, 1, 1, 1, 1, 15000);
 }
+
+namespace {
+Tester::TestRegistrar r9("Level creation", LevelFactoryLevelCreation);
+Tester::TestRegistrar r10("Level up", LevelFactoryLevelup);
+Tester::TestRegistrar r11("Level down", LevelFactoryLeveldown);
+Tester::TestRegistrar r12("Level0 block gen", Level0BlockGeneration);
+Tester::TestRegistrar r13("Level0 block gen loop",
+                          Level0BlockGenerationSrcCirculation);
+Tester::TestRegistrar r14("Level0 block gen loop",
+                          Level0BlockGenerationSrcCirculation);
+Tester::TestRegistrar r15("Level1 dist", Level1distribution);
+Tester::TestRegistrar r16("Level2 dist", Level2distribution);
+Tester::TestRegistrar r17("Level3 dist", Level3distribution);
+Tester::TestRegistrar r18("Level4 dist", Level4distribution);
+}  // namespace

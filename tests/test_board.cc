@@ -40,7 +40,7 @@ void printCanvas(Canvas& canvas) {
 }
 }  // namespace
 
-TEST_CASE(Blocks_Movements) {
+void testBlocksMovements() {
     Board board;
     std::shared_ptr<IBlock> ibp = std::make_shared<IBlock>(0);
     std::shared_ptr<JBlock> jbp = std::make_shared<JBlock>(0);
@@ -87,10 +87,10 @@ TEST_CASE(Blocks_Movements) {
     };
 
     Canvas& canvas1 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas1, expected1));
+    Tester::assert_true(canvasMatches(canvas1, expected1));
 
     auto dropResult1 = board.drop();
-    REQUIRE(true == std::get<0>(dropResult1));
+    Tester::assert_true(true == std::get<0>(dropResult1));
 
     std::shared_ptr<Block> expected2[18][11] = {
         {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
@@ -131,7 +131,7 @@ TEST_CASE(Blocks_Movements) {
          nullptr, nullptr},
     };
     Canvas& canvas2 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas2, expected2));
+    Tester::assert_true(canvasMatches(canvas2, expected2));
 
     board.left();
     std::shared_ptr<Block> expected3[18][11] = {
@@ -173,7 +173,7 @@ TEST_CASE(Blocks_Movements) {
          nullptr, nullptr},
     };
     Canvas& canvas3 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas3, expected3));
+    Tester::assert_true(canvasMatches(canvas3, expected3));
 
     board.right();
     board.right();
@@ -216,7 +216,7 @@ TEST_CASE(Blocks_Movements) {
          nullptr, nullptr},
     };
     Canvas& canvas4 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas4, expected4));
+    Tester::assert_true(canvasMatches(canvas4, expected4));
 
     board.left();
     std::shared_ptr<Block> expected5[18][11] = {
@@ -258,7 +258,7 @@ TEST_CASE(Blocks_Movements) {
          nullptr, nullptr},
     };
     Canvas& canvas5 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas5, expected5));
+    Tester::assert_true(canvasMatches(canvas5, expected5));
 
     board.rotate(true);
     std::shared_ptr<Block> expected6[18][11] = {
@@ -300,7 +300,7 @@ TEST_CASE(Blocks_Movements) {
          nullptr, nullptr},
     };
     Canvas& canvas6 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas6, expected6));
+    Tester::assert_true(canvasMatches(canvas6, expected6));
 
     board.rotate(false);
     std::shared_ptr<Block> expected7[18][11] = {
@@ -342,7 +342,7 @@ TEST_CASE(Blocks_Movements) {
          nullptr, nullptr},
     };
     Canvas& canvas7 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas7, expected7));
+    Tester::assert_true(canvasMatches(canvas7, expected7));
 
     board.down();
     std::shared_ptr<Block> expected8[18][11] = {
@@ -384,12 +384,12 @@ TEST_CASE(Blocks_Movements) {
          nullptr, nullptr},
     };
     Canvas& canvas8 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas8, expected8));
+    Tester::assert_true(canvasMatches(canvas8, expected8));
 
     std::shared_ptr<BombBlockCat> bomb = std::make_shared<BombBlockCat>(0);
     board.setNextBlock(bomb);
     auto dropResult2 = board.drop();
-    REQUIRE(true == std::get<0>(dropResult2));
+    Tester::assert_true(true == std::get<0>(dropResult2));
     std::shared_ptr<Block> expected9[18][11] = {
         {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
          nullptr, nullptr, nullptr},
@@ -429,10 +429,10 @@ TEST_CASE(Blocks_Movements) {
          nullptr, nullptr},
     };
     Canvas& canvas9 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas9, expected9));
+    Tester::assert_true(canvasMatches(canvas9, expected9));
 }
 
-TEST_CASE(Clearing) {
+void testClearing() {
     Board board;
     std::shared_ptr<IBlock> ibp1 = std::make_shared<IBlock>(0);
     std::shared_ptr<IBlock> ibp2 = std::make_shared<IBlock>(0);
@@ -493,7 +493,7 @@ TEST_CASE(Clearing) {
          nullptr},
     };
     Canvas& canvas1 = board.getCanvas();
-    REQUIRE(canvasMatches(canvas1, expected1));
+    Tester::assert_true(canvasMatches(canvas1, expected1));
 
     board.right();
     board.right();
@@ -546,7 +546,12 @@ TEST_CASE(Clearing) {
     };
     Canvas& canvas2 = board.getCanvas();
     // printCanvas(canvas2);
-    REQUIRE(canvasMatches(canvas2, expected2));
-    REQUIRE(1 == std::get<1>(result));
-    REQUIRE(2 == std::get<2>(result).size());
+    Tester::assert_true(canvasMatches(canvas2, expected2));
+    Tester::assert_true(1 == std::get<1>(result));
+    Tester::assert_true(2 == std::get<2>(result).size());
 }
+
+namespace {
+Tester::TestRegistrar r4("Block movement", testBlocksMovements);
+Tester::TestRegistrar r5("Blocks clearing", testClearing);
+}  // namespace
