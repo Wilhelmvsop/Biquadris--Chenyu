@@ -36,9 +36,6 @@ export class Player {
         const std::vector<std::shared_ptr<Block>>& blocksCleared) const;
     // say something to users when build for prod
     void say(const std::string& msg) const;
-    // prepare the stream for input again when necessary
-    // (sometimes stream just fails)
-    void prepStream(std::istream& in);
 
    public:
     // take the target level and set up a new board (player owns the board)
