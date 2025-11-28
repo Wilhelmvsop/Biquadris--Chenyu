@@ -120,6 +120,8 @@ void Game::processCmd(const std::string& rawFirst, const std::string& extra,
         return;
     }
 
+    // TODO: new command "alias" to update commands
+
     // Multipliable commands
     for (int t = 0; t < cnt; ++t) {
         PlayResult res = cur.play(resolved, extra, t == cnt - 1);

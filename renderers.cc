@@ -49,9 +49,11 @@ export class GuiRenderer : public Renderer {
     RenderPackage cacheP1;
     RenderPackage cacheP2;
 
-    void clearHalfWindow(bool left);
+    void clearHalfWindow(const RenderPackage& pkg, bool left,
+                         const RenderPackage& cache);
     void renderSplitLine();
-    void renderHalf(const RenderPackage& pkg, bool left);
+    void renderHalf(const RenderPackage& pkg, bool left,
+                    const RenderPackage& cache);
 
    public:
     // Ctor will prepare everything we need for rendering and create

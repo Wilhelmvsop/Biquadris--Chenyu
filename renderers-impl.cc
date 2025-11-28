@@ -53,7 +53,9 @@ const unsigned int GUI_WINDOW_HEIGHT =
 const std::string GUI_WINDOW_NAME = "Biquardris++";
 const std::string GUI_FONT_QUERY = "-*-helvetica-medium-r-*-*-16-*-*-*-*-*-*-*";
 
-GuiRenderer::GuiRenderer() : cacheP1{}, cacheP2{} {
+GuiRenderer::GuiRenderer()
+    : cacheP1{-1, -1, {}, -1, nullptr, false},
+      cacheP2{-1, -1, {}, -1, nullptr, false} {
     display = XOpenDisplay(NULL);
     if (!display) throw std::runtime_error("Couldn't open X display");
 
@@ -101,13 +103,48 @@ GuiRenderer::~GuiRenderer() {
     XCloseDisplay(display);
 }
 
-void GuiRenderer::clearHalfWindow(bool left) {
-    int x = 0;
-    if (!left) x += GUI_WINDOW_WIDTH / 2;
+void GuiRenderer::clearHalfWindow(const RenderPackage& pkg, bool left,
+                                  const RenderPackage& cache) {
+    int x = (GUI_WINDOW_WIDTH * GUI_MARGIN_X_PERCENT) / 100;
+    int y = (GUI_WINDOW_HEIGHT * GUI_MARGIN_Y_PERCENT) / 100;
+
+    if (!left) {
+        x += GUI_PLAYER_WINDOW_WIDTH +
+             ((GUI_WINDOW_WIDTH *
+               (GUI_SPLIT_LINE_PERCENT + (2 * GUI_MARGIN_X_PERCENT))) /
+              100);
+    }
 
     XSetForeground(display, gc, BlackPixel(display, screen));
-    XFillRectangle(display, pixmap, gc, x, 0, GUI_WINDOW_WIDTH / 2,
-                   GUI_WINDOW_HEIGHT);
+    std::vector<XRectangle> rects{};
+
+    if (pkg.level != cache.level) {
+        rects.emplace_back(
+            XRectangle{x, y, GUI_PLAYER_WINDOW_WIDTH, GUI_CELL_WIDTH});
+    }
+    if (pkg.score != cache.score) {
+        int yScore = y + GUI_CELL_WIDTH;
+        rects.emplace_back(
+            XRectangle{x, yScore, GUI_PLAYER_WINDOW_WIDTH, GUI_CELL_WIDTH});
+    }
+    if (pkg.highscore != cache.highscore) {
+        int yHScore = y + 2 * GUI_CELL_WIDTH;
+        rects.emplace_back(
+            XRectangle{x, yHScore, GUI_PLAYER_WINDOW_WIDTH, GUI_CELL_WIDTH});
+    }
+    if (pkg.pixels != cache.pixels) {
+        int yBoard = y + 5 * GUI_CELL_WIDTH;
+        rects.emplace_back(XRectangle{x, yBoard, GUI_PLAYER_WINDOW_WIDTH,
+                                      18 * GUI_CELL_WIDTH});
+    }
+    if (!pkg.nextBlock.get() || !cache.nextBlock.get() ||
+        pkg.nextBlock->getChar() != cache.nextBlock->getChar()) {
+        int yNext = y + 23 * GUI_CELL_WIDTH;
+        rects.emplace_back(
+            XRectangle{x, yNext, GUI_PLAYER_WINDOW_WIDTH, 4 * GUI_CELL_WIDTH});
+    }
+
+    XFillRectangles(display, pixmap, gc, rects.data(), rects.size());
 }
 
 void GuiRenderer::renderSplitLine() {
@@ -126,11 +163,8 @@ void GuiRenderer::renderSplitLine() {
     }
 }
 
-void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
-    const std::string levelMsg = "Level: " + std::to_string(pkg.level);
-    const std::string scoreMsg = "Score: " + std::to_string(pkg.score);
-    const std::string highscoreMsg =
-        "High score: " + std::to_string(pkg.highscore);
+void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left,
+                             const RenderPackage& cache) {
     const std::string nextMsg = "Next:";
 
     // cursor for traversing
@@ -150,12 +184,24 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
     // render top part;
     XSetForeground(display, gc, WhitePixel(display, screen));
     y += GUI_CELL_WIDTH;
-    XDrawString(display, pixmap, gc, x, y, levelMsg.c_str(), levelMsg.length());
+    if (pkg.level != cache.level) {
+        const std::string levelMsg = "Level: " + std::to_string(pkg.level);
+        XDrawString(display, pixmap, gc, x, y, levelMsg.c_str(),
+                    levelMsg.length());
+    }
     y += GUI_CELL_WIDTH;
-    XDrawString(display, pixmap, gc, x, y, scoreMsg.c_str(), scoreMsg.length());
+    if (pkg.score != cache.score) {
+        const std::string scoreMsg = "Score: " + std::to_string(pkg.score);
+        XDrawString(display, pixmap, gc, x, y, scoreMsg.c_str(),
+                    scoreMsg.length());
+    }
     y += GUI_CELL_WIDTH;
-    XDrawString(display, pixmap, gc, x, y, highscoreMsg.c_str(),
-                highscoreMsg.length());
+    if (pkg.highscore != cache.highscore) {
+        const std::string highscoreMsg =
+            "High score: " + std::to_string(pkg.highscore);
+        XDrawString(display, pixmap, gc, x, y, highscoreMsg.c_str(),
+                    highscoreMsg.length());
+    }
 
     // draw top part's end line:
     y += GUI_CELL_WIDTH;
@@ -195,7 +241,7 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
     y += GUI_CELL_WIDTH;
     XDrawString(display, pixmap, gc, x, y, nextMsg.c_str(), nextMsg.length());
 
-    if (pkg.nextBlock) {
+    if (pkg.nextBlock.get()) {
         const std::vector<std::pair<int, int>> coords =
             pkg.nextBlock->getCoords();
         const char nextC = pkg.nextBlock->getChar();
@@ -237,14 +283,14 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
 
 void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
     if (p1 != cacheP1) {
-        clearHalfWindow(true);
-        renderHalf(p1, true);
+        clearHalfWindow(p1, true, cacheP1);
+        renderHalf(p1, true, cacheP1);
         cacheP1 = p1;
     }
 
     if (p2 != cacheP2) {
-        clearHalfWindow(false);
-        renderHalf(p2, false);
+        clearHalfWindow(p2, false, cacheP2);
+        renderHalf(p2, false, cacheP2);
         cacheP2 = p2;
     }
 
