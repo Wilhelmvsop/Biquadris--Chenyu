@@ -39,9 +39,9 @@ export class GuiRenderer : public Renderer {
     Display* display;
     Window window;
     int screen;
+    Pixmap pixmap;
     GC gc;
-    XFontStruct* bigFont;
-    XFontStruct* normalFont;
+    XFontStruct* font;
 
     void clearWindow();
     void renderSplitLine();

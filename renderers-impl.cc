@@ -40,13 +40,7 @@ const unsigned int GUI_WINDOW_HEIGHT =
     (GUI_PLAYER_WINDOW_HEIGHT * 100) / (100 - (2 * GUI_MARGIN_Y_PERCENT));
 
 const std::string GUI_WINDOW_NAME = "Biquardris++";
-
-const std::string GUI_BIG_FONT_QUERY =
-    "-*-helvetica-bold-r-*-*-48-*-*-*-*-*-*-*";
-const std::string GUI_NORMAL_FONT_QUERY =
-    "-*-helvetica-medium-r-*-*-16-*-*-*-*-*-*-*";
-// "-*-dejavu sans-medium-r-*-*-14-*-*-*-*-*-*-*";
-// "-*-liberation sans-medium-r-*-*-14-*-*-*-*-*-*-*";
+const std::string GUI_FONT_QUERY = "-*-helvetica-medium-r-*-*-16-*-*-*-*-*-*-*";
 
 GuiRenderer::GuiRenderer() {
     display = XOpenDisplay(NULL);
@@ -58,23 +52,21 @@ GuiRenderer::GuiRenderer() {
         GUI_WINDOW_WIDTH, GUI_WINDOW_HEIGHT, GUI_WINDOW_BORDER_WIDTH,
         WhitePixel(display, screen), BlackPixel(display, screen));
     XStoreName(display, window, GUI_WINDOW_NAME.c_str());
-    gc = XCreateGC(display, window, 0, NULL);
+    pixmap = XCreatePixmap(display, window, GUI_WINDOW_WIDTH, GUI_WINDOW_HEIGHT,
+                           DefaultDepth(display, screen));
+    gc = XCreateGC(display, pixmap, 0, NULL);
 
     XMapWindow(display, window);
 
     XFlush(display);
 
     // load fonts
-    bigFont = XLoadQueryFont(display, GUI_BIG_FONT_QUERY.c_str());
-    if (!bigFont) {
-        bigFont = XLoadQueryFont(display, "fixed");  // fallback
-    }
-    normalFont = XLoadQueryFont(display, GUI_NORMAL_FONT_QUERY.c_str());
-    if (!normalFont) {
-        normalFont = XLoadQueryFont(display, "fixed");  // fallback
+    font = XLoadQueryFont(display, GUI_FONT_QUERY.c_str());
+    if (!font) {
+        font = XLoadQueryFont(display, "fixed");  // fallback
     }
     // normal font for gc
-    XSetFont(display, gc, normalFont->fid);
+    XSetFont(display, gc, font->fid);
     XFlush(display);
     usleep(1000);
 
@@ -92,8 +84,8 @@ GuiRenderer::GuiRenderer() {
 }
 
 GuiRenderer::~GuiRenderer() {
-    if (bigFont) XFreeFont(display, bigFont);
-    if (normalFont) XFreeFont(display, normalFont);
+    if (font) XFreeFont(display, font);
+    XFreePixmap(display, pixmap);
     XFreeGC(display, gc);
     XCloseDisplay(display);
 }
@@ -101,11 +93,8 @@ GuiRenderer::~GuiRenderer() {
 // TODO: want to ignore the split line
 void GuiRenderer::clearWindow() {
     XSetForeground(display, gc, BlackPixel(display, screen));
-    XFillRectangle(display, window, gc, 0, 0, GUI_WINDOW_WIDTH,
+    XFillRectangle(display, pixmap, gc, 0, 0, GUI_WINDOW_WIDTH,
                    GUI_WINDOW_HEIGHT);
-
-    XFlush(display);
-    usleep(1000);
 }
 
 void GuiRenderer::renderSplitLine() {
@@ -118,13 +107,10 @@ void GuiRenderer::renderSplitLine() {
         unsigned int width =
             ((GUI_WINDOW_WIDTH * GUI_SPLIT_LINE_PERCENT) / 100);
         unsigned int height = GUI_WINDOW_HEIGHT;
-        XFillRectangle(display, window, gc, x, y, width, height);
+        XFillRectangle(display, pixmap, gc, x, y, width, height);
     } else {
-        XDrawLine(display, window, gc, x, y, x, y + GUI_WINDOW_HEIGHT);
+        XDrawLine(display, pixmap, gc, x, y, x, y + GUI_WINDOW_HEIGHT);
     }
-
-    XFlush(display);
-    usleep(1000);
 }
 
 void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
@@ -147,33 +133,30 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
     // render top part;
     XSetForeground(display, gc, WhitePixel(display, screen));
     y += GUI_CELL_WIDTH;
-    XDrawString(display, window, gc, x, y, levelMsg.c_str(), levelMsg.length());
+    XDrawString(display, pixmap, gc, x, y, levelMsg.c_str(), levelMsg.length());
     y += GUI_CELL_WIDTH;
-    XDrawString(display, window, gc, x, y, scoreMsg.c_str(), scoreMsg.length());
+    XDrawString(display, pixmap, gc, x, y, scoreMsg.c_str(), scoreMsg.length());
     y += GUI_CELL_WIDTH;
-    XDrawString(display, window, gc, x, y, highscoreMsg.c_str(),
+    XDrawString(display, pixmap, gc, x, y, highscoreMsg.c_str(),
                 highscoreMsg.length());
 
     // draw top part's end line:
     y += GUI_CELL_WIDTH;
     int xBorder =
         left ? 0 : x - ((2 * GUI_WINDOW_WIDTH * GUI_MARGIN_X_PERCENT) / 100);
-    XDrawLine(display, window, gc, xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2),
+    XDrawLine(display, pixmap, gc, xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2),
               y);
-
-    XFlush(display);
-    usleep(1000);
 
     y += GUI_CELL_WIDTH;
     // render board outline:
     int xGrid = x;
     for (int colLine = 0; colLine < 12; ++colLine, xGrid += GUI_CELL_WIDTH) {
-        XDrawLine(display, window, gc, xGrid, y, xGrid,
+        XDrawLine(display, pixmap, gc, xGrid, y, xGrid,
                   y + (18 * GUI_CELL_WIDTH));
     }
     int yGrid = y;
     for (int rowLine = 0; rowLine < 19; ++rowLine, yGrid += GUI_CELL_WIDTH) {
-        XDrawLine(display, window, gc, x, yGrid, x + (11 * GUI_CELL_WIDTH),
+        XDrawLine(display, pixmap, gc, x, yGrid, x + (11 * GUI_CELL_WIDTH),
                   yGrid);
     }
 
@@ -186,24 +169,22 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
             unsigned long color = colorMap.at(c);
             // fill color
             XSetForeground(display, gc, color);
-            XFillRectangle(display, window, gc, xAlias, y, GUI_CELL_WIDTH,
+            XFillRectangle(display, pixmap, gc, xAlias, y, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
             // outline
             XSetForeground(display, gc, BlackPixel(display, screen));
-            XDrawRectangle(display, window, gc, xAlias, y, GUI_CELL_WIDTH,
+            XDrawRectangle(display, pixmap, gc, xAlias, y, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
         }
     }
-    XFlush(display);
-    usleep(1000);
 
     // render bottom part:
     XSetForeground(display, gc, WhitePixel(display, screen));
     // bottom part top line:
-    XDrawLine(display, window, gc, xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2),
+    XDrawLine(display, pixmap, gc, xBorder, y, xBorder + (GUI_WINDOW_WIDTH / 2),
               y);
     y += GUI_CELL_WIDTH;
-    XDrawString(display, window, gc, x, y, nextMsg.c_str(), nextMsg.length());
+    XDrawString(display, pixmap, gc, x, y, nextMsg.c_str(), nextMsg.length());
 
     if (pkg.nextBlock) {
         const std::vector<std::pair<int, int>> coords =
@@ -221,18 +202,15 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
             int yAlias = y + ((yCoord + yOffset) * GUI_CELL_WIDTH);
             // color
             XSetForeground(display, gc, color);
-            XFillRectangle(display, window, gc, xAlias, yAlias, GUI_CELL_WIDTH,
+            XFillRectangle(display, pixmap, gc, xAlias, yAlias, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
 
             // outline
             XSetForeground(display, gc, BlackPixel(display, screen));
-            XDrawRectangle(display, window, gc, xAlias, yAlias, GUI_CELL_WIDTH,
+            XDrawRectangle(display, pixmap, gc, xAlias, yAlias, GUI_CELL_WIDTH,
                            GUI_CELL_WIDTH);
         }
     }
-
-    XFlush(display);
-    usleep(1000);
 }
 
 void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
@@ -241,8 +219,9 @@ void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
     renderSplitLine();
     renderHalf(p2, false);
 
+    XCopyArea(display, pixmap, window, gc, 0, 0, GUI_WINDOW_WIDTH,
+              GUI_WINDOW_HEIGHT, 0, 0);
     XFlush(display);
-    usleep(1000);
 }
 
 void TuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
