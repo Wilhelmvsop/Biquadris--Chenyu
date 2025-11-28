@@ -1,6 +1,6 @@
+import TestRunner;
 import Blocks;
 import <iostream>;
-#include "test_runner.h"
 
 IBlock iblock{0};
 JBlock jblock{0};

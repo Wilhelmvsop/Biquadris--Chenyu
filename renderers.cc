@@ -7,15 +7,18 @@ export module Renderers;
 import Blocks;
 import <unordered_map>;
 import <memory>;
+import <vector>;
 
 export struct RenderPackage {
     int score;
     int highscore;
-    // 18 x 11 array, use pointer instead to not copy everything
-    char (*pixels)[11];
+    std::vector<std::vector<char>> pixels;
     int level;
     std::shared_ptr<Block> nextBlock;
     bool lost;
+
+    bool operator==(const RenderPackage& other) const;
+    bool operator!=(const RenderPackage& other) const;
 };
 
 export class Renderer {
@@ -24,28 +27,33 @@ export class Renderer {
     virtual ~Renderer() = default;
 };
 
-// I: blue
-// J: dark blue
-// L: orange
-// O: yellow
-// S: lemon
-// Z: red
-// T: purple
-// *: brown
 export class GuiRenderer : public Renderer {
     inline static const std::unordered_map<char, unsigned long> colorMap = {
-        {'I', 0x0000FF}, {'J', 0x00008B}, {'L', 0xFF8C00}, {'O', 0xFFFF00},
-        {'S', 0xFFF44F}, {'Z', 0xFF0000}, {'T', 0x800080}, {'*', 0x8B4513},
+        {'I', 0x00E5E5},  // Cyan
+        {'J', 0x4169E1},  // Blue
+        {'L', 0xFF8C00},  // Orange
+        {'O', 0xFFD700},  // Gold
+        {'S', 0x32CD32},  // Green
+        {'Z', 0xFF3333},  // Red
+        {'T', 0x9370DB},  // Purple
+        {'*', 0xD2691E},  // brown
     };
 
     Display* display;
     Window window;
     int screen;
+    Pixmap pixmap;
     GC gc;
+    XFontStruct* font;
 
-    void clearWindow();
+    RenderPackage cacheP1;
+    RenderPackage cacheP2;
+
+    void clearHalfWindow(const RenderPackage& pkg, bool left,
+                         const RenderPackage& cache);
     void renderSplitLine();
-    void renderHalf(const RenderPackage& pkg, bool left);
+    void renderHalf(const RenderPackage& pkg, bool left,
+                    const RenderPackage& cache);
 
    public:
     // Ctor will prepare everything we need for rendering and create
@@ -57,8 +65,8 @@ export class GuiRenderer : public Renderer {
 
 // Text-based (terminal) renderer
 export class TuiRenderer : public Renderer {
-  public:
-     TuiRenderer() = default;
-     ~TuiRenderer() override = default;
-     void render(const RenderPackage &p1, const RenderPackage &p2) override;
+   public:
+    TuiRenderer() = default;
+    ~TuiRenderer() override = default;
+    void render(const RenderPackage& p1, const RenderPackage& p2) override;
 };
