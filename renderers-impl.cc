@@ -52,6 +52,8 @@ const unsigned int GUI_WINDOW_HEIGHT =
 
 const std::string GUI_WINDOW_NAME = "Biquardris++";
 const std::string GUI_FONT_QUERY = "-*-helvetica-medium-r-*-*-16-*-*-*-*-*-*-*";
+const std::string GUI_BIG_FONT_QUERY =
+    "-*-helvetica-bold-r-*-*-48-*-*-*-*-*-*-*";
 
 GuiRenderer::GuiRenderer()
     : cacheP1{-1, -1, {}, -1, nullptr, false},
@@ -78,6 +80,11 @@ GuiRenderer::GuiRenderer()
     if (!font) {
         font = XLoadQueryFont(display, "fixed");  // fallback
     }
+    bigFont = XLoadQueryFont(display, GUI_BIG_FONT_QUERY.c_str());
+    if (!bigFont) {
+        bigFont = XLoadQueryFont(display, "fixed");  // fallback
+    }
+
     // normal font for gc
     XSetFont(display, gc, font->fid);
     XFlush(display);
@@ -98,6 +105,7 @@ GuiRenderer::GuiRenderer()
 
 GuiRenderer::~GuiRenderer() {
     if (font) XFreeFont(display, font);
+    if (bigFont) XFreeFont(display, bigFont);
     XFreePixmap(display, pixmap);
     XFreeGC(display, gc);
     XCloseDisplay(display);
@@ -279,6 +287,21 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left,
 
     XSetForeground(display, gc, BlackPixel(display, screen));
     XDrawRectangles(display, pixmap, gc, rects.data(), rects.size());
+
+    // deal with lost page
+    if (pkg.lost) {
+        const unsigned int msgHeight = 60;
+        int yMid = (GUI_WINDOW_WIDTH / 2) - (msgHeight / 2);
+        XFillRectangle(display, pixmap, gc, x, yMid, GUI_PLAYER_WINDOW_WIDTH,
+                       msgHeight);
+        XSetFont(display, gc, bigFont->fid);
+        XSetForeground(display, gc, WhitePixel(display, screen));
+        const std::string msg = "You Lost!";
+        // very bad approximation
+        XDrawString(display, pixmap, gc, x + 85, yMid + 48, msg.c_str(),
+                    msg.length());
+        XSetFont(display, gc, font->fid);
+    }
 }
 
 void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
@@ -298,6 +321,10 @@ void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
     XCopyArea(display, pixmap, window, gc, 0, 0, GUI_WINDOW_WIDTH,
               GUI_WINDOW_HEIGHT, 0, 0);
     XFlush(display);
+
+    if (p1.lost || p2.lost) {
+        sleep(2);
+    }
 }
 
 void TuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {

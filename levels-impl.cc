@@ -206,7 +206,7 @@ std::shared_ptr<Block> Level3::randomNextBlock() {
     } else if (rand == 6) {
         return std::make_shared<TBlock>(getLevelNum());
     } else if (rand == 7) {
-        return std::make_shared<JBlock>(g[118;1:3uetLevelNum());
+        return std::make_shared<JBlock>(getLevelNum());
     } else {
         return std::make_shared<IBlock>(getLevelNum());
     }
