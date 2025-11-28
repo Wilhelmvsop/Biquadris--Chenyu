@@ -21,7 +21,8 @@ void InputHandler::useDefaultAliases() {
         {"random", "random"},
         {"sequence", "sequence"},
         {"restart", "restart"},
-        {"quit", "quit"},  // for gracefully exit
+        {"alias", "alias"},  // for register new alias to existing commands
+        {"quit", "quit"},    // for gracefully exit
         {"I", "I"},
         {"J", "J"},
         {"L", "L"},

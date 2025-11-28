@@ -120,7 +120,24 @@ void Game::processCmd(const std::string& rawFirst, const std::string& extra,
         return;
     }
 
-    // TODO: new command "alias" to update commands
+    if (resolved == "alias") {
+        if (extra.empty()) {
+            throw std::runtime_error("alias: please provide [alias]-[command]");
+        }
+        const char delim = '-';
+        auto pos = extra.find(delim);
+        if (pos == std::string::npos) {
+            throw std::runtime_error("alias: please provide [alias]-[command]");
+        }
+        const std::string alias = extra.substr(0, pos);
+        const std::string command = extra.substr(pos + 1, extra.length());
+        bool ok = inputHandler->registerAlias(alias, command);
+        if (!ok) {
+            throw std::runtime_error(
+                "alias: invalid command. Please try again.");
+        }
+        return;
+    }
 
     // Multipliable commands
     for (int t = 0; t < cnt; ++t) {
