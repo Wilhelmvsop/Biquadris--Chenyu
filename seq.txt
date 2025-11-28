@@ -12,3 +12,10 @@ I
 4right
 drop
 drop
+O
+8right
+drop
+drop
+I
+cc
+10right

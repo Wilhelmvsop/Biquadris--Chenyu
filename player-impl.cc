@@ -139,9 +139,10 @@ PlayResult Player::play(const std::string& command, const std::string& extra,
         if (numRowsCleared >= 2) {
             std::string specialAction;
             const std::string msg =
-                "Choose your special action (blind, heavy, force [block])";
+                "Choose your special action (blind, heavy, force [block]):";
             say(msg);
             while ((*input) >> specialAction) {
+                std::cout << "point a" << std::endl;
                 if ("blind" == specialAction) {
                     res.debuff.blind = true;
                     break;

@@ -65,6 +65,8 @@ std::istream& Game::prompt(std::string& response, const std::string& msg) {
 void Game::switchInput(const std::string filename) {
     if (filename.empty()) {
         input = std::shared_ptr<std::istream>(&std::cin, [](std::istream*) {});
+        p1->setInput(input);
+        p2->setInput(input);
         return;
     }
 
