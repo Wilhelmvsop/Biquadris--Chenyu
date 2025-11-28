@@ -45,6 +45,7 @@ export class GuiRenderer : public Renderer {
     Pixmap pixmap;
     GC gc;
     XFontStruct* font;
+    XFontStruct* bigFont;
 
     RenderPackage cacheP1;
     RenderPackage cacheP2;
