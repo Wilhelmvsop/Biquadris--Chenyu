@@ -5,10 +5,11 @@ import <utility>;
 import <algorithm>;
 import <stdexcept>;
 import <string>;
+import <stdexcept>;
 
 // BLOCK IMPLEMENTATIONS
-Block::Block(std::vector<std::pair<int, int>> coords, char ch, int level) noexcept
-    : coords{coords}, ch{ch}, motherLevel{level} {}
+Block::Block(std::vector<std::pair<int, int>> coords, char ch, int level, int duration) noexcept
+    : coords{coords}, ch{ch}, motherLevel{level}, duration{duration} {}
 Block::~Block() noexcept {}
 
 bool Block::isCleared() const noexcept { return coords.empty(); }
@@ -36,6 +37,17 @@ std::vector<std::pair<int, int>> Block::getCoords() const noexcept {
 char Block::getChar() const noexcept { return ch; }
 
 int Block::getMotherLevel() const noexcept { return motherLevel; }
+
+int Block::getDuration() const noexcept { return duration; }
+
+void Block::decreaseDuration() {
+     if (duration > 0) {
+          duration -= 1;
+     }
+     else {
+          throw std::runtime_error("Cannot decrease duration by 1 as duration is <= 0.");
+     }
+}
 
 void Block::setCoords(std::vector<std::pair<int, int>> coords) noexcept {
     this->coords = coords;
@@ -94,44 +106,45 @@ std::vector<std::pair<int, int>> Block::getRotatedCoords(bool clockwise) const n
 
 std::shared_ptr<Block> Block::clone() const {
     BlockFactory bf{};
-    return bf.createBlock(ch, motherLevel);
+    return bf.createBlock(ch, motherLevel, duration);
 }
 
 // SUBCLASS CONSTRUCTORS
-IBlock::IBlock(int level) noexcept
-    : Block{{{3, 0}, {3, 1}, {3, 2}, {3, 3}}, 'I', level} {}
-JBlock::JBlock(int level) noexcept
-    : Block{{{3, 0}, {3, 1}, {3, 2}, {2, 0}}, 'J', level} {}
-LBlock::LBlock(int level) noexcept
-    : Block{{{3, 0}, {3, 1}, {3, 2}, {2, 2}}, 'L', level} {}
-OBlock::OBlock(int level) noexcept
-    : Block{{{3, 0}, {3, 1}, {2, 0}, {2, 1}}, 'O', level} {}
-SBlock::SBlock(int level) noexcept
-    : Block{{{3, 0}, {3, 1}, {2, 1}, {2, 2}}, 'S', level} {}
-ZBlock::ZBlock(int level) noexcept
-    : Block{{{3, 1}, {3, 2}, {2, 0}, {2, 1}}, 'Z', level} {}
-TBlock::TBlock(int level) noexcept
-    : Block{{{3, 1}, {2, 0}, {2, 1}, {2, 2}}, 'T', level} {}
-BombBlockCat::BombBlockCat(int level) noexcept : Block{{{3, 5}}, '*', level} {}
+IBlock::IBlock(int level, int duration) noexcept
+    : Block{{{3, 0}, {3, 1}, {3, 2}, {3, 3}}, 'I', level, duration} {}
+JBlock::JBlock(int level, int duration) noexcept
+    : Block{{{3, 0}, {3, 1}, {3, 2}, {2, 0}}, 'J', level, duration} {}
+LBlock::LBlock(int level, int duration) noexcept
+    : Block{{{3, 0}, {3, 1}, {3, 2}, {2, 2}}, 'L', level, duration} {}
+OBlock::OBlock(int level, int duration) noexcept
+    : Block{{{3, 0}, {3, 1}, {2, 0}, {2, 1}}, 'O', level, duration} {}
+SBlock::SBlock(int level, int duration) noexcept
+    : Block{{{3, 0}, {3, 1}, {2, 1}, {2, 2}}, 'S', level, duration} {}
+ZBlock::ZBlock(int level, int duration) noexcept
+    : Block{{{3, 1}, {3, 2}, {2, 0}, {2, 1}}, 'Z', level, duration} {}
+TBlock::TBlock(int level, int duration) noexcept
+    : Block{{{3, 1}, {2, 0}, {2, 1}, {2, 2}}, 'T', level, duration} {}
+BombBlockCat::BombBlockCat(int level, int duration) noexcept
+    : Block{{{3, 5}}, '*', level, duration} {}
 
-std::shared_ptr<Block> BlockFactory::createBlock(char c, int level) const {
+std::shared_ptr<Block> BlockFactory::createBlock(char c, int level, int duration) const {
     switch (c) {
         case 'I':
-            return std::make_shared<IBlock>(level);
+            return std::make_shared<IBlock>(level, duration);
         case 'J':
-            return std::make_shared<JBlock>(level);
+            return std::make_shared<JBlock>(level, duration);
         case 'L':
-            return std::make_shared<LBlock>(level);
+            return std::make_shared<LBlock>(level, duration);
         case 'O':
-            return std::make_shared<OBlock>(level);
+            return std::make_shared<OBlock>(level, duration);
         case 'S':
-            return std::make_shared<SBlock>(level);
+            return std::make_shared<SBlock>(level, duration);
         case 'Z':
-            return std::make_shared<ZBlock>(level);
+            return std::make_shared<ZBlock>(level, duration);
         case 'T':
-            return std::make_shared<TBlock>(level);
+            return std::make_shared<TBlock>(level, duration);
         case '*':
-            return std::make_shared<BombBlockCat>(level);
+            return std::make_shared<BombBlockCat>(level, duration);
         default:
             return nullptr;
     }
