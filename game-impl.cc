@@ -82,8 +82,7 @@ void Game::switchInput(const std::string filename) {
 }
 
 void Game::processCmd(const std::string& rawFirst, const std::string& extra,
-                      Player& cur, Player& other, std::istream& curInput,
-                      int& whoLost) {
+                      Player& cur, Player& other, int& whoLost) {
     // parse multiplier from rawFirst
     size_t i = 0;
     while (i < rawFirst.size() && rawFirst[i] >= '0' && rawFirst[i] <= '9') ++i;
@@ -232,7 +231,7 @@ void Game::play() {
         Player& other = (turnCount % 2 == 1) ? *p2 : *p1;
         int whoLost = 0;
         try {
-            processCmd(first, extra, cur, other, *input, whoLost);
+            processCmd(first, extra, cur, other, whoLost);
             if (whoLost) {
                 render(whoLost);
                 return;

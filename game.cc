@@ -44,12 +44,7 @@ export class Game {
     void parseFirstWord(const std::string& line, std::string& first,
                         std::string& extra);
     void processCmd(const std::string& rawFirst, const std::string& extra,
-                    Player& cur, Player& other, std::istream& curInput,
-                    int& whoLost);
-    // for deleting input stream that is not std::cin
-    void istreamDeleter(std::istream* is) {
-        if (is != &std::cin) delete is;
-    }
+                    Player& cur, Player& other, int& whoLost);
     // say something to console, only works with prod build
     void say(const std::string& msg) const noexcept;
 
