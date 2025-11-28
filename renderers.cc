@@ -16,6 +16,9 @@ export struct RenderPackage {
     int level;
     std::shared_ptr<Block> nextBlock;
     bool lost;
+
+    bool operator==(const RenderPackage& other) const;
+    bool operator!=(const RenderPackage& other) const;
 };
 
 export class Renderer {
@@ -43,7 +46,10 @@ export class GuiRenderer : public Renderer {
     GC gc;
     XFontStruct* font;
 
-    void clearWindow();
+    RenderPackage cacheP1;
+    RenderPackage cacheP2;
+
+    void clearHalfWindow(bool left);
     void renderSplitLine();
     void renderHalf(const RenderPackage& pkg, bool left);
 

@@ -13,6 +13,17 @@ import <climits>;
 import <algorithm>;
 import <stdexcept>;
 
+bool RenderPackage::operator==(const RenderPackage& other) const {
+    return score == other.score && highscore == other.highscore &&
+           pixels == other.pixels && level == other.level &&
+           nextBlock->getChar() == other.nextBlock->getChar() &&
+           lost == other.lost;
+}
+
+bool RenderPackage::operator!=(const RenderPackage& other) const {
+    return !(*this == other);
+}
+
 const int GUI_WINDOW_X = 100;
 const int GUI_WINDOW_Y = 100;
 const unsigned int GUI_WINDOW_WIDTH = 800;
@@ -42,7 +53,7 @@ const unsigned int GUI_WINDOW_HEIGHT =
 const std::string GUI_WINDOW_NAME = "Biquardris++";
 const std::string GUI_FONT_QUERY = "-*-helvetica-medium-r-*-*-16-*-*-*-*-*-*-*";
 
-GuiRenderer::GuiRenderer() {
+GuiRenderer::GuiRenderer() : cacheP1{}, cacheP2{} {
     display = XOpenDisplay(NULL);
     if (!display) throw std::runtime_error("Couldn't open X display");
 
@@ -90,10 +101,12 @@ GuiRenderer::~GuiRenderer() {
     XCloseDisplay(display);
 }
 
-// TODO: want to ignore the split line
-void GuiRenderer::clearWindow() {
+void GuiRenderer::clearHalfWindow(bool left) {
+    int x = 0;
+    if (!left) x += GUI_WINDOW_WIDTH / 2;
+
     XSetForeground(display, gc, BlackPixel(display, screen));
-    XFillRectangle(display, pixmap, gc, 0, 0, GUI_WINDOW_WIDTH,
+    XFillRectangle(display, pixmap, gc, x, 0, GUI_WINDOW_WIDTH / 2,
                    GUI_WINDOW_HEIGHT);
 }
 
@@ -223,11 +236,19 @@ void GuiRenderer::renderHalf(const RenderPackage& pkg, bool left) {
 }
 
 void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
-    clearWindow();
-    renderHalf(p1, true);
-    renderSplitLine();
-    renderHalf(p2, false);
+    if (p1 != cacheP1) {
+        clearHalfWindow(true);
+        renderHalf(p1, true);
+        cacheP1 = p1;
+    }
 
+    if (p2 != cacheP2) {
+        clearHalfWindow(false);
+        renderHalf(p2, false);
+        cacheP2 = p2;
+    }
+
+    renderSplitLine();
     XCopyArea(display, pixmap, window, gc, 0, 0, GUI_WINDOW_WIDTH,
               GUI_WINDOW_HEIGHT, 0, 0);
     XFlush(display);

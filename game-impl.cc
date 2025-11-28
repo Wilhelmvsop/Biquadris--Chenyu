@@ -155,7 +155,7 @@ static RenderPackage buildPackage(std::shared_ptr<Player> p) {
     pkg.highscore = p->getHighscore();
     pkg.level = p->getLevelNum();
     pkg.pixels = p->getPixels();
-    pkg.nextBlock = p->getNextBlock();
+    pkg.nextBlock = p->getNextBlock()->clone();
     pkg.lost = false;
     return pkg;
 }
