@@ -198,7 +198,7 @@ std::shared_ptr<Block> Level3::randomNextBlock() {
     } else if (rand == 6) {
         return std::make_shared<TBlock>(getLevelNum());
     } else if (rand == 7) {
-        return std::make_shared<JBlock>(getLevelNum());
+        return std::make_shared<JBlock>(g[118;1:3uetLevelNum());
     } else {
         return std::make_shared<IBlock>(getLevelNum());
     }
@@ -273,6 +273,28 @@ std::shared_ptr<Block> Level4::getNextBlock() {
     }
 }
 
+Level5::Level5(unsigned int seed) : Level{5, true, DEFAULT_SOURCE_FILE, seed} {}
+
+std::shared_ptr<Block> Level5::getNextBlock() {
+    int rand = std::rand() % 9;
+    int d = 3;
+    if (rand <= 1) {
+        return std::make_shared<SBlock>(getLevelNum(), d);
+    } else if (rand <= 3) {
+        return std::make_shared<ZBlock>(getLevelNum(), d);
+    } else if (rand == 4) {
+        return std::make_shared<LBlock>(getLevelNum(), d);
+    } else if (rand == 5) {
+        return std::make_shared<OBlock>(getLevelNum(), d);
+    } else if (rand == 6) {
+        return std::make_shared<TBlock>(getLevelNum(), d);
+    } else if (rand == 7) {
+        return std::make_shared<JBlock>(getLevelNum(), d);
+    } else {
+        return std::make_shared<IBlock>(getLevelNum(), d);
+    }
+};
+
 /////////////////////////// LevelFactory ///////////////////////////
 std::shared_ptr<Level> LevelFactory::createLevel(int levelNum, unsigned int seed,
                                  std::string srcfile) {
@@ -296,6 +318,10 @@ std::shared_ptr<Level> LevelFactory::createLevel(int levelNum, unsigned int seed
             return res;
         case 4:
             res = std::make_shared<Level4>(seed);
+            res->setSrcfile(srcfile);
+            return res;
+        case 5:
+            res = std::make_shared<Level5>(seed);
             res->setSrcfile(srcfile);
             return res;
         default:

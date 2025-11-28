@@ -112,3 +112,9 @@ export class Level4 : public Level {
     Level4(unsigned int seed = 1);
     std::shared_ptr<Block> getNextBlock() override;
 };
+
+export class Level5 : public Level {
+   public:
+    Level5(unsigned int seed = 1);
+    std::shared_ptr<Block> getNextBlock() override;
+};
