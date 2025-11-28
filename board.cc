@@ -11,14 +11,13 @@ export class Board {
     std::shared_ptr<Block> nextBlock;
     std::vector<std::shared_ptr<Block>> blocks;
 
-    bool updateCurrentBlock() noexcept;  // true if currentBlock fits on canvas
-                                         // and false otherwise
-    int clear() noexcept;  // clears any rows thats filled and return number of
-                           // rows cleared
-    // Updates blocks vector to remove any pointer that points to blocks whose
-    // coordinates are all erased returns vector of heap allocated Block
-    // objects, user needs to delete pointers after use
-    std::vector<std::shared_ptr<Block>> refreshBlocks() noexcept;
+     bool updateCurrentBlock() noexcept; // true if currentBlock fits on canvas and false otherwise
+     int clear() noexcept; // clears any rows thats filled and return number of rows cleared
+     // deleting timed blocks if their duration is 0
+     void removeTimedBlocks();
+     // Updates blocks vector to remove any pointer that points to blocks whose coordinates are all erased
+     // returns vector of heap allocated Block objects, user needs to delete pointers after use
+     std::vector<std::shared_ptr<Block>> refreshBlocks() noexcept;
 
    public:
     Board() noexcept;

@@ -74,6 +74,21 @@ int Board::clear() noexcept {
     return clearedRows;
 }
 
+void Board::removeTimedBlocks() {
+     auto it = blocks.begin();
+     for (; it != blocks.end(); ++it) {
+          if ((*it)->getDuration() != 0) {
+               continue;
+          }
+          auto coords = (*it)->getCoords();
+          for (auto coord : coords) {
+               canvas[coord.first][coord.second] = nullptr;
+               it = blocks.erase(it);
+          }
+     }
+}
+
+
 std::vector<std::shared_ptr<Block>> Board::refreshBlocks() noexcept {
     std::vector<std::shared_ptr<Block>> clearedBlocks;
 
@@ -236,10 +251,18 @@ Board::drop() noexcept {
 
     blocks.emplace_back(std::move(currentBlock));
 
-    int rowsCleared = clear();
-    std::vector<std::shared_ptr<Block>> clearedBlocks = refreshBlocks();
-    bool continueGame = updateCurrentBlock();
-    return std::make_tuple(continueGame, rowsCleared, clearedBlocks);
+     int rowsCleared = clear();
+     std::vector<std::shared_ptr<Block>> clearedBlocks = refreshBlocks();
+     bool continueGame = updateCurrentBlock();
+
+     for (auto blockptr : blocks) {
+          int duration = blockptr->getDuration();
+          if (duration > 0) {
+               blockptr->decreaseDuration();
+          }
+     }
+     removeTimedBlocks();
+     return std::make_tuple(continueGame, rowsCleared, clearedBlocks);
 }
 
 bool Board::setCurrentBlock(std::shared_ptr<Block> newBlock) noexcept {
