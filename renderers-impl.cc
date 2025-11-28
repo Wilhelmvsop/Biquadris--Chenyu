@@ -321,6 +321,10 @@ void GuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
     XCopyArea(display, pixmap, window, gc, 0, 0, GUI_WINDOW_WIDTH,
               GUI_WINDOW_HEIGHT, 0, 0);
     XFlush(display);
+
+    if (p1.lost || p2.lost) {
+        sleep(2);
+    }
 }
 
 void TuiRenderer::render(const RenderPackage& p1, const RenderPackage& p2) {
