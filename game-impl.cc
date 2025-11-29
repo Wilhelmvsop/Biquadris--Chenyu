@@ -49,17 +49,40 @@ void Game::say(const std::string& msg) const noexcept {
 #endif
 }
 
-std::istream& Game::prompt(std::istream& in, std::string& response,
-                           const std::string& msg) {
+std::istream& Game::prompt(std::string& response, const std::string& msg) {
 #ifndef TESTING
     std::cout << msg;
 #endif
-    return getline(in, response);
+    // end of the command sequence file, switch back to cin
+    if (!getline(*input, response) && input.get() != &std::cin) {
+        switchInput();
+        return getline(*input, response);
+    }
+    return *input;
+}
+
+// filaname "" means cin
+void Game::switchInput(const std::string filename) {
+    if (filename.empty()) {
+        input = std::shared_ptr<std::istream>(&std::cin, [](std::istream*) {});
+        p1->setInput(input);
+        p2->setInput(input);
+        return;
+    }
+
+    auto fs = std::make_shared<std::ifstream>(filename);
+    if (!fs->is_open()) {
+        throw std::runtime_error("file " + filename + "  doesn't exists.");
+    }  // file not found
+
+    input = fs;
+    // set special input source for players
+    p1->setInput(input);
+    p2->setInput(input);
 }
 
 void Game::processCmd(const std::string& rawFirst, const std::string& extra,
-                      Player& cur, Player& other, std::istream& curInput,
-                      int& whoLost) {
+                      Player& cur, Player& other, int& whoLost) {
     // parse multiplier from rawFirst
     size_t i = 0;
     while (i < rawFirst.size() && rawFirst[i] >= '0' && rawFirst[i] <= '9') ++i;
@@ -79,21 +102,20 @@ void Game::processCmd(const std::string& rawFirst, const std::string& extra,
         exit(0);
     }
 
-    // If non-multipliable commands, play once and return
+    // If non-multipliable commands, play once and return:
+
+    // "sequence" only takes in commd sequence file when not in the sequence
+    // file mode and switch back to input from cin when end of seqence file
     if (resolved == "sequence") {
+        if (input.get() != &std::cin) {
+            throw std::runtime_error("sequence: already in sequence file mode");
+        }
+
         if (extra.empty()) {
             throw std::runtime_error("sequence: please provide the file name.");
         }
 
-        auto fs = std::make_shared<std::ifstream>(extra);
-        if (!fs->is_open()) {
-            throw std::runtime_error("file " + extra + "  doesn't exists.");
-        }  // file not found
-
-        input = fs;
-        // set special input source for players
-        p1->setInput(input);
-        p2->setInput(input);
+        switchInput(extra);
         return;
     }
 
@@ -200,7 +222,7 @@ void Game::play() {
     render();
 
     // main loop
-    while (prompt(*input, line, turnCount % 2 == 1 ? "p1: " : "p2: ")) {
+    while (prompt(line, turnCount % 2 == 1 ? "p1: " : "p2: ")) {
         // first word: something like "3rig"
         // extra word: for some command e.g. sequence "seq.txt"
         std::string first, extra;
@@ -209,7 +231,7 @@ void Game::play() {
         Player& other = (turnCount % 2 == 1) ? *p2 : *p1;
         int whoLost = 0;
         try {
-            processCmd(first, extra, cur, other, *input, whoLost);
+            processCmd(first, extra, cur, other, whoLost);
             if (whoLost) {
                 render(whoLost);
                 return;

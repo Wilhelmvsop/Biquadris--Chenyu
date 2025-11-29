@@ -37,6 +37,7 @@ export class GuiRenderer : public Renderer {
         {'Z', 0xFF3333},  // Red
         {'T', 0x9370DB},  // Purple
         {'*', 0xD2691E},  // brown
+        {'?', 0x444444}   // dark grey
     };
 
     Display* display;

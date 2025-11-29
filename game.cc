@@ -44,22 +44,18 @@ export class Game {
     void parseFirstWord(const std::string& line, std::string& first,
                         std::string& extra);
     void processCmd(const std::string& rawFirst, const std::string& extra,
-                    Player& cur, Player& other, std::istream& curInput,
-                    int& whoLost);
-    // for deleting input stream that is not std::cin
-    void istreamDeleter(std::istream* is) {
-        if (is != &std::cin) delete is;
-    }
+                    Player& cur, Player& other, int& whoLost);
     // say something to console, only works with prod build
     void say(const std::string& msg) const noexcept;
 
     // say something and get input from user
     // return whether getting input succeed
-    std::istream& prompt(std::istream& in, std::string& response,
-                         const std::string& msg);
+    std::istream& prompt(std::string& response, const std::string& msg);
 
     // render 1 frame of the game. Take optional loser (1 or 2)
     void render(int whoLost = 0);
+    // switch game's input source (default cin)
+    void switchInput(const std::string filename = "");
 
    public:
     // Game(std::istream* in = &std::cin, InputHandler* ih = nullptr);
