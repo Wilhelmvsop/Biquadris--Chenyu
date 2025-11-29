@@ -147,10 +147,14 @@ PlayResult Player::play(const std::string& command, const std::string& extra,
                 } else if ("heavy" == specialAction) {
                     res.debuff.heaviness = 1;
                     break;
-                } else if ("force" == specialAction) {
-                    char forcedBlock;
+                } else if (specialAction.length() == 7 &&
+                           "force" == specialAction.substr(0, 5)) {
+                    char forcedBlock = specialAction[6];
                     BlockFactory bf;
-                    (*input) >> forcedBlock;
+                    if (!bf.isValidChar(forcedBlock)) {
+                        say("invalid char, try again");
+                        continue;
+                    }
                     std::shared_ptr<Block> forcedBlockPtr =
                         bf.createBlock(forcedBlock, level->getLevelNum());
                     res.debuff.force = forcedBlockPtr;
