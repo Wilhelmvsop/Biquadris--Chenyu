@@ -74,6 +74,7 @@ gcm.cache:
 
 # Build main program: -lX11 for linking X lib
 $(TARGET): $(MAIN_OBJECTS)
+	@echo "Building main program..."
 	$(CXX) $(CXXFLAGS) $(MAIN_OBJECTS) -lX11 -o $(TARGET)
 
 ##################################################################
@@ -81,6 +82,7 @@ $(TARGET): $(MAIN_OBJECTS)
 ##################################################################
 # Pattern: each module compiles to objects/ directory
 $(OBJ_DIR)/%.o: %.cc $(HEADERS_COMPILED) | $(OBJ_DIR)
+	@echo "Compiling $<..."
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Specific dependencies for implementation files (depend on their interface)
@@ -106,8 +108,11 @@ $(MAIN_OBJECT): $(MAIN_SOURCE) $(MODULE_INTERFACE_OBJECTS) $(HEADERS_COMPILED) |
 # Build and run tests
 test: CXXFLAGS += -DTESTING
 test:
+	@echo "Preparing test build (force recompile of modules with -DTESTING)..."
 	# Remove module objects so they are recompiled with -DTESTING
+	@rm -f $(MODULE_OBJECTS) $(MODULE_IMPL_OBJECTS) $(MODULE_INTERFACE_OBJECTS) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT)
 	@$(MAKE) $(TEST_EXEC)
+	@echo "Running tests..."
 	@./$(TEST_EXEC)
 
 # Build test executable (uses same module objects as main program)
@@ -115,20 +120,25 @@ test:
 # 	@echo "Linking test executable..."
 # 	$(CXX) $(CXXFLAGS) $(MODULE_OBJECTS) $(TEST_RUNNER_OBJECT) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) -lX11 -o $(TEST_EXEC)
 $(TEST_EXEC): $(MODULE_OBJECTS) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) $(HEADERS_COMPILED)
+	@echo "Linking test executable..."
 	$(CXX) $(CXXFLAGS) $(MODULE_OBJECTS) $(TEST_OBJECTS) $(TEST_MAIN_OBJECT) -lX11 -o $(TEST_EXEC)
 
 # Compile test main
 $(TEST_MAIN_OBJECT): $(TEST_MAIN_SOURCE) $(HEADERS_COMPILED) | $(OBJ_DIR)
+	@echo "Compiling test main..."
 	$(CXX) $(CXXFLAGS) -c $(TEST_MAIN_SOURCE) -o $(TEST_MAIN_OBJECT)
 
 # Compile individual test files (depend on all module objects)
 $(OBJ_DIR)/test_%.o: $(TEST_DIR)/test_%.cc $(MODULE_OBJECTS) $(HEADERS_COMPILED) | $(OBJ_DIR)
+	@echo "Compiling test: $<"
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 ##################################################################
 # Renderer Tests (GUI and TUI): Build and run all renderer tests
 test_render: $(RENDER_TEST_EXECUTABLES)
+	@echo "Running renderer tests..."
 	@for test in $(RENDER_TEST_EXECUTABLES); do \
+		echo "Running $$test..."; \
 		./$$test || exit 1; \
 	done
 
@@ -136,15 +146,43 @@ test_render: $(RENDER_TEST_EXECUTABLES)
 .PHONY: test_tui test_gui
 
 test_tui: $(OBJ_DIR)/test_tui
+	@echo "Running TUI renderer test..."
 	@./$(OBJ_DIR)/test_tui
 
 test_gui: $(OBJ_DIR)/test_gui
+	@echo "Running GUI renderer test..."
 	@./$(OBJ_DIR)/test_gui
 
 ##################################################################
 
 # Build each renderer test executable from test_render/*.cc
 $(OBJ_DIR)/%: $(TEST_RENDER_DIR)/%.cc $(MODULE_OBJECTS) $(HEADERS_COMPILED) | $(OBJ_DIR)
+	@echo "Building renderer test: $<"
 	$(CXX) $(CXXFLAGS) $< $(MODULE_OBJECTS) -lX11 -o $@
+
+# Clean build artifacts
+clean:
+	@echo "Cleaning..."
+	@rm -rf $(OBJ_DIR) $(TARGET) $(HEADERS_COMPILED) $(TEST_EXEC)
+	@rm -rf gcm.cache
+
+# Help message
+help:
+	@echo "Available targets:"
+	@echo "  make        - Build main program ($(TARGET))"
+	@echo "  make test   - Build and run tests"
+	@echo "  make test_render - Build and run renderer tests (GUI/TUI) from test_render/"
+	@echo "  make clean  - Remove all build artifacts"
+	@echo "  make help   - Show this message"
+	@echo ""
+	@echo "To add a new module:"
+	@echo "  0. If needed, add new standard library module (e.g. iostream) <- search POINT0"
+	@echo "  1. Add interface file to MODULE_INTERFACES (e.g., list.cc) <- search POINT1"
+	@echo "  2. Add implementation file to MODULE_IMPLS (e.g., list-impl.cc) <- search POINT1"
+	@echo "  3. Add dependency rule: \$$(OBJ_DIR)/list-impl.o: list-impl.cc \$$(OBJ_DIR)/list.o <- search POINT2"
+	@echo ""
+	@echo "To add tests: create tests/test_<module>.cc files"
+	@echo "To add rendering tests: create test_render/test_<name>.cc files"
+	@echo "They will be automatically discovered and compiled"
 
 
