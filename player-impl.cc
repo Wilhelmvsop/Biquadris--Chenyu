@@ -94,7 +94,6 @@ int Player::calculateBlockScore(
     return res;
 }
 
-// TODO: centralize command, not in here
 PlayResult Player::play(const std::string& command, const std::string& extra,
                         bool lastRep) {
     // add up current turn debuff with our permanent debuff
