@@ -13,3 +13,6 @@ and modular architecture.
 ## Usage Notice
 This repository is shared for demonstration and learning purposes.
 It is not intended for use in academic submissions or coursework.
+
+## UML
+![UML](Stupid Tetris UML (1).png)
